@@ -141,6 +141,46 @@
         letter-spacing: 0.5px;
     }
 
+
+    #finder-actions {
+        padding: 12px;
+        border-top: 1px solid #333;
+        background: #111;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    /* botão base */
+    #finder-actions button {
+        width: 100%;
+        background: #0f0f0f;
+        border: 1px solid #333;
+        color: #e5e5e5;
+        padding: 10px;
+        cursor: pointer;
+        font-family: monospace;
+        letter-spacing: 1px;
+        border-radius: 6px;
+    }
+
+    /* hover geral */
+    #finder-actions button:hover {
+        background: #151515;
+    }
+
+    /* destaque login */
+    #loginBtn {
+        border-color: #000000;
+        color: #ffffff;
+    }
+
+    /* destaque chat */
+    #openChatBtn {
+        border-color: #000000;
+        color: #ffffff;
+    }
+
     /* Output formatting */
     .cmd { color: #e5e5e5; }
     .out { color: #cccccc; }
@@ -193,7 +233,14 @@
         <div id="finder">
             <div id="finder-header">Arquivos</div>
             <div id="file-list"></div>
+
+            <!-- CHAT BUTTON -->
+            <div id="finder-actions">
+                <button id="loginBtn">LOGIN</button>
+                <button id="openChatBtn">CHAT</button>
+            </div>
         </div>
+
 
     </div>
 
@@ -290,7 +337,7 @@
             <button onclick="submitLogin()" style="
                 margin-top:10px;
                 background:#111;
-                border:1px solid #00e676;
+                border:1px solid #e5e5e5;
                 color:#00e676;
                 padding:10px;
                 cursor:pointer;
@@ -308,24 +355,7 @@
      JAVASCRIPT COMPLETO
 ============================== -->
 
-<script type="module">
-
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getDatabase, ref, push, onChildAdded } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-
-const firebaseConfig = {
-    apiKey: "AIzaSyBF2SS3AannotAsRR8s4wFDlKZfdWnlaNU",
-    authDomain: "h40n-terminal.firebaseapp.com",
-    projectId: "h40n-terminal",
-    storageBucket: "h40n-terminal.firebasestorage.app",
-    messagingSenderId: "704571577542",
-    appId: "1:704571577542:web:32379144889c8c32c9b3c7",
-    databaseURL: "https://h40n-terminal-default-rtdb.firebaseio.com"
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
-
+<script>
 /* =========================================================
     SISTEMA DE OUTPUT
 ========================================================= */
@@ -356,54 +386,6 @@ function getFileIcon(fileName) {
     if (fileName.includes("experimento")) return fileIcons.experimento;
     return fileIcons.default;
 }
-
-/* =========================================================
-    FUNÇÃO CHAT
-========================================================= */
-let mode = "terminal"; // terminal | chat
-let chatRef = null;
-
-function parseChatMessage(input) {
-    const txt = input.trim();
-
-    if (txt.toUpperCase().startsWith("H40N ")) {
-        return { user: "H40N", text: txt.slice(5) };
-    }
-
-    if (txt.toUpperCase().startsWith("ECH0 ")) {
-        return { user: "ECH0", text: txt.slice(5) };
-    }
-
-    return { user: "visitante", text: txt };
-}
-
-function connectH40N() {
-    print("progress", "[ iniciando handshake com H40N ]", true);
-
-    runAfterProgress(() => {
-        mode = "chat";
-        chatRef = ref(db, "rooms/H40N/messages");
-
-        print("success", "[ canal H40N estabelecido ]");
-        print("out", "Digite mensagens ou 'exit' para encerrar");
-
-        onChildAdded(chatRef, (snap) => {
-            const { user, text } = snap.val();
-            print("out", `${user}> ${text}`);
-        });
-    });
-}
-
-function sendChatMessage(raw) {
-    const msg = parseChatMessage(raw);
-
-    push(chatRef, {
-        user: msg.user,
-        text: msg.text,
-        time: Date.now()
-    });
-}
-
 
 /* =========================================================
     FUNÇÃO PRINT — AGORA SUPORTA MENSAGENS TEMPORÁRIAS (process)
@@ -465,18 +447,13 @@ input.addEventListener("keydown", function(e) {
         e.preventDefault();
         const cmd = input.value.trim();
         if (cmd === "") return;
-    
-        // Só imprime o comando se NÃO estiver em modo chat
-        if (mode !== "chat") {
-            print("cmd", "> " + cmd);
-        }
-    
+        print("cmd", "> " + cmd);
+        // push to history
         commandHistory.push(cmd);
-        historyIndex = -1;
+        historyIndex = -1; // reset so next ArrowUp starts from last
         processCommand(cmd);
         input.value = "";
     }
-
 });
 
 function renderBar(value) {
@@ -541,6 +518,7 @@ function openLogin() {
     document.getElementById("loginOverlay").style.display = "block";
     document.getElementById("loginUser").value = "";
     document.getElementById("loginPass").value = "";
+
     setTimeout(() => {
         document.getElementById("loginUser").focus();
     }, 50);
@@ -561,6 +539,7 @@ function submitLogin() {
 
     closeLogin();
     attemptLogin(user, pass);
+    updateAuthButton(); // ✅ perfeito
 }
 
 
@@ -572,42 +551,19 @@ function processCommand(cmd) {
     const args = cmd.trim().split(/\s+/);
     const command = args[0].toLowerCase();
 
-    // MODO CHAT
-    if (mode === "chat") {
-        if (cmd.toLowerCase() === "exit") {
-            mode = "terminal";
-            print("success", "[ conexão H40N encerrada ]");
-            return;
-        }
-
-        sendChatMessage(cmd);
-        return;
-    }
-
-
     switch (command) {
 
         case "help":
             print("out",
 `======================================================
-login
 logout
 status
 clear
-connect to h40n
 ======================================================`);
             break;
 
         case "clear":
             output.innerHTML = "";
-            break;
-
-        case "login":
-            if (loggedIn) {
-                print("error", "Você já está logado");
-                break;
-            }
-            openLogin();
             break;
 
         case "logout":
@@ -626,15 +582,6 @@ connect to h40n
             print("error", "Acesso negado. Nenhum operador autenticado.");
             break;
         }
-
-        case "connect":
-        if (cmd.toLowerCase() === "connect to h40n") {
-            connectH40N();
-        } else {
-            print("error", "Destino desconhecido");
-        }
-        break;
-
 
         print("progress", "Sincronizando dados biométricos do núcleo H40N...", true);
 
@@ -817,7 +764,49 @@ function openFileInViewer(filename, path) {
     });
 }
 
+/* =========================================================
+    CHAT MODULE
+========================================================= */
 
+function openChat() {
+    const user = loggedIn && currentUser ? currentUser : "visitante";
+
+    print("progress", "Abrindo canal de comunicação...", true);
+
+    runAfterProgress(() => {
+        print("success", `canal aberto como ${user}`);
+
+        document.getElementById("viewerFrame").src =
+            `docs/chat.html?user=${encodeURIComponent(user)}`;
+
+        document.getElementById("viewerOverlay").style.display = "block";
+    });
+}
+
+function updateAuthButton() {
+    const btn = document.getElementById("loginBtn");
+
+    if (loggedIn && currentUser) {
+        btn.textContent = currentUser;
+        btn.style.borderColor = "#00e676";
+        btn.style.color = "#00e676";
+        btn.onclick = () => {
+            print("out", `Operador ativo: ${currentUser}`);
+        };
+    } else {
+        btn.textContent = "LOGIN";
+        btn.style.borderColor = "#333";
+        btn.style.color = "#e5e5e5";
+        btn.onclick = openLogin;
+    }
+}
+
+window.addEventListener("DOMContentLoaded", () => {
+    document.getElementById("loginBtn").onclick = openLogin;
+    document.getElementById("openChatBtn").onclick = openChat;
+
+    updateAuthButton(); // 👈 ESSENCIAL
+});
 
 
 /* =========================================================
@@ -828,5 +817,6 @@ print("success", "Conectado a H40N - N.ROOT");
 print("out", "Digite 'help' para ver os comandos disponíveis");
 
 </script>
+
 </body>
 </html>
