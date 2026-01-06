@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>H40N - N.ROOT | TERMINAL V9.0</title>
+
+<style>
+    body {
+        background: #0a0a0a;
+        margin: 0;
+        padding: 0;
+        font-family: monospace;
+        color: #e5e5e5;
+    }
+
+    .terminal-wrapper {
+        width: 90%;
+        max-width: 1200px;
+        margin: 40px auto;
+        border: 1px solid #333;
+        border-radius: 8px;
+        overflow: hidden;
+        background: #111;
+        box-shadow: 0px 0px 20px rgba(0,0,0,0.6);
+        position: relative;
+    }
+
+    .terminal-header {
+        background: #1a1a1a;
+        padding: 10px;
+        border-bottom: 1px solid #333;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+    }
+    .dot.red { background: #ff5f56; }
+    .dot.yellow { background: #ffbd2e; }
+    .dot.green { background: #27c93f; }
+
+    .terminal-title {
+        flex: 1;
+        text-align: center;
+        opacity: 0.7;
+    }
+
+    /* GRID principal lateral */
+    #main-grid {
+        display: flex;
+        height: 80vh;
+    }
+
+    /* Painel do terminal à esquerda */
+    #left-terminal {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        border-right: 1px solid #333;
+    }
+
+    #output {
+        flex: 1;
+        overflow-y: auto;
+        padding: 15px;
+        line-height: 1.45em;
+        white-space: pre-wrap;
+    }
+
+    .terminal-input-area {
+        display: flex;
+        gap: 10px;
+        padding: 12px;
+        background: #1a1a1a;
+        border-top: 1px solid #333;
+    }
+
+    #input {
+        width: 100%;
+        background: transparent;
+        border: none;
+        outline: none;
+        color: #e5e5e5;
+        font-size: 1em;
+    }
+
+    /* Painel Finder à direita */
+    #finder {
+        width: 280px;
+        background: #111;
+        display: flex;
+        flex-direction: column;
+        overflow-y: auto;
+    }
+
+    #finder-header {
+        padding: 12px;
+        border-bottom: 1px solid #333;
+        color: #c1c1c1;
+        font-size: 13px;
+        letter-spacing: 1px;
+    }
+
+    #file-list {
+        padding: 10px;
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+    }
+
+    .file-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 8px;
+        cursor: pointer;
+        border-radius: 6px;
+        transition: 0.15s;
+        background: #161616;
+        border: 1px solid #222;
+    }
+
+    .file-item:hover {
+        background: #222;
+    }
+
+    .file-icon {
+        width: 32px;
+        opacity: 0.7;
+        filter: grayscale(1);
+    }
+
+    .file-label {
+        font-size: 13px;
+        color: #e5e5e5;
+        letter-spacing: 0.5px;
+    }
+
+    /* Output formatting */
+    .cmd { color: #e5e5e5; }
+    .out { color: #cccccc; }
+    .error { color: #ff4d4d; }
+    .success { color: #00e676; }
+    .progress { color: #ffe100; }
+    .note { color: #bdbdbd; opacity: 1; transition: opacity 0.6s; }
+
+    /* Viewer Overlay */
+    #viewerOverlay {
+        display:none;
+        position:absolute;
+        top:0;
+        left:0;
+        width:100%;
+        height:100%;
+        z-index: 999;
+        background: rgba(0,0,0,0.75);
+        backdrop-filter: blur(3px);
+    }
+</style>
+</head>
+
+<body>
+
+<div class="terminal-wrapper">
+
+    <!-- HEADER DO TERMINAL -->
+    <div class="terminal-header">
+        <div class="dot red"></div>
+        <div class="dot yellow"></div>
+        <div class="dot green"></div>
+        <div class="terminal-title">H40N - N.ROOT | TERMINAL V9.0</div>
+    </div>
+
+    <!-- GRID PRINCIPAL -->
+    <div id="main-grid">
+
+        <!-- TERMINAL À ESQUERDA -->
+        <div id="left-terminal">
+            <div id="output" aria-live="polite"></div>
+
+            <div class="terminal-input-area">
+                <span style="color:#00e676; font-weight:bold;">&gt;</span>
+                <input id="input" type="text" autocomplete="off" placeholder="Digite um comando..." />
+            </div>
+        </div>
+
+        <!-- FINDER À DIREITA -->
+        <div id="finder">
+            <div id="finder-header">Arquivos</div>
+            <div id="file-list"></div>
+        </div>
+
+    </div>
+
+    <!-- FILE VIEWER -->
+    <div id="viewerOverlay">
+        <div style="
+            width:90%;
+            height:85%;
+            margin:40px auto 0 auto;
+            background:#0a0a0a;
+            border:1px solid #333;
+            border-radius:12px;
+            overflow:hidden;
+            display:flex;
+            flex-direction:column;
+            box-shadow:0 0 20px rgba(0,0,0,0.7);
+        ">
+            <div style="padding:10px; background:#1a1a1a; border-bottom:1px solid #333; display:flex; align-items:center; gap:10px;">
+                <div class="dot red" onclick="closeViewer()"></div>
+                <div class="dot yellow"></div>
+                <div class="dot green"></div>
+            </div>
+
+            <iframe id="viewerFrame"
+                    style="width:100%; height:100%; border:none; background:#0a0a0a;">
+            </iframe>
+        </div>
+    </div>
+
+    <!-- LOGIN OVERLAY -->
+    <div id="loginOverlay" style="
+    display:none;
+    position:absolute;
+    inset:0;
+    z-index:1000;
+    background: rgba(0,0,0,0.8);
+    backdrop-filter: blur(3px);
+    ">
+
+    <div style="
+        width:420px;
+        margin:120px auto;
+        background:#0a0a0a;
+        border:1px solid #333;
+        border-radius:12px;
+        box-shadow:0 0 25px rgba(0,0,0,0.8);
+        overflow:hidden;
+        font-family: monospace;
+    ">
+
+        <!-- Header -->
+        <div style="
+            padding:10px;
+            background:#1a1a1a;
+            border-bottom:1px solid #333;
+            display:flex;
+            align-items:center;
+            gap:10px;
+        ">
+            <div class="dot red" onclick="closeLogin()"></div>
+            <div class="dot yellow"></div>
+            <div class="dot green"></div>
+            <div style="flex:1;text-align:center;opacity:.7;">
+                AUTHENTICATION NODE
+            </div>
+        </div>
+
+        <!-- Body -->
+        <div style="padding:20px; display:flex; flex-direction:column; gap:14px;">
+            <div style="opacity:.7;font-size:13px;">
+                Credenciais requeridas
+            </div>
+
+            <input id="loginUser" placeholder="Usuário"
+                style="
+                background:#111;
+                border:1px solid #333;
+                padding:10px;
+                color:#e5e5e5;
+                outline:none;
+                border-radius:6px;
+                ">
+
+            <input id="loginPass" type="password" placeholder="Senha"
+                style="
+                background:#111;
+                border:1px solid #333;
+                padding:10px;
+                color:#e5e5e5;
+                outline:none;
+                border-radius:6px;
+                ">
+
+            <button onclick="submitLogin()" style="
+                margin-top:10px;
+                background:#111;
+                border:1px solid #00e676;
+                color:#00e676;
+                padding:10px;
+                cursor:pointer;
+                border-radius:6px;
+            ">
+                AUTENTICAR
+            </button>
+        </div>
+    </div>
+</div>
+
+</div>
+
+<!-- =============================
+     JAVASCRIPT COMPLETO
+============================== -->
+
+<script>
+/* =========================================================
+    SISTEMA DE OUTPUT
+========================================================= */
+
+const output = document.getElementById("output");
+const input = document.getElementById("input");
+
+let noahStatus = {
+    integridadeFisica: 73,
+    memoria: 53,
+    corrupcaoECH0: 43,
+    processamentoNeural: 63,
+    varianciaEmocional: 33,
+};
+
+const fileIcons = {
+    relatorio: "img/database.png",
+    anexos: "img/clip.png",
+    operador: "img/user.png",
+    experimento: "img/terminal.png",
+    default: "img/poll.png"
+};
+
+function getFileIcon(fileName) {
+    if (fileName.includes("relatorio")) return fileIcons.relatorio;
+    if (fileName.includes("anexos")) return fileIcons.anexos;
+    if (fileName.includes("operador")) return fileIcons.operador;
+    if (fileName.includes("experimento")) return fileIcons.experimento;
+    return fileIcons.default;
+}
+
+/* =========================================================
+    FUNÇÃO PRINT — AGORA SUPORTA MENSAGENS TEMPORÁRIAS (process)
+========================================================= */
+function print(type, text, temporary = false) {
+    // Se o progress está ativo, só permitimos prints DO PROGRESS
+    if (progressActive && type !== "progress") {
+        return; // todos os outros prints são ignorados
+    }
+
+    const div = document.createElement("div");
+    div.className = type;
+    div.textContent = text;
+    output.appendChild(div);
+    output.scrollTop = output.scrollHeight;
+
+    if (temporary) {
+        setTimeout(() => {
+            div.style.opacity = "0";
+            setTimeout(() => div.remove(), 400);
+        }, 2000);
+    }
+}
+
+/* =========================================================
+    HISTÓRICO DE COMANDOS (↑ ↓) - robust implementation
+========================================================= */
+let commandHistory = [];
+let historyIndex = -1;
+
+input.addEventListener("keydown", function(e) {
+    // Handle arrows for history first
+    if (e.key === "ArrowUp") {
+        e.preventDefault();
+        if (commandHistory.length === 0) return;
+        if (historyIndex === -1) historyIndex = commandHistory.length;
+        historyIndex = Math.max(0, historyIndex - 1);
+        input.value = commandHistory[historyIndex] || "";
+        return;
+    }
+    if (e.key === "ArrowDown") {
+        e.preventDefault();
+        if (commandHistory.length === 0) return;
+        if (historyIndex === -1) { input.value = ""; return; }
+        historyIndex = Math.min(commandHistory.length - 1, historyIndex + 1);
+        if (historyIndex === commandHistory.length - 1) {
+            input.value = commandHistory[historyIndex] || "";
+        } else if (historyIndex >= commandHistory.length) {
+            input.value = "";
+            historyIndex = -1;
+        } else {
+            input.value = commandHistory[historyIndex] || "";
+        }
+        return;
+    }
+
+    // Enter handling
+    if (e.key === "Enter") {
+        e.preventDefault();
+        const cmd = input.value.trim();
+        if (cmd === "") return;
+        print("cmd", "> " + cmd);
+        // push to history
+        commandHistory.push(cmd);
+        historyIndex = -1; // reset so next ArrowUp starts from last
+        processCommand(cmd);
+        input.value = "";
+    }
+});
+
+function renderBar(value) {
+    const totalBlocks = 20; // tamanho da barra
+    const filledBlocks = Math.round((value / 100) * totalBlocks);
+
+    const filled = "█".repeat(filledBlocks);
+    const empty = "░".repeat(totalBlocks - filledBlocks);
+
+    return `${filled}${empty} ${value}%`;
+}
+
+/* =========================================================
+    SISTEMA DE LOGIN
+========================================================= */
+
+let loggedIn = false;
+let currentUser = null;
+
+let progressActive = false;
+
+function runAfterProgress(callback) {
+    progressActive = true;
+
+    // Progress dura 5s (mesma lógica do print temporary)
+    setTimeout(() => {
+        progressActive = false;
+        callback(); // só executa depois
+    }, 3000);
+}
+
+
+const database = {
+    users: [
+        { id: 1, name: "H40N", password: "PR4G4#33" },
+        { id: 2, name: "ECH0", password: "33#33" },
+    ]
+};
+
+function attemptLogin(username, password) {
+    const user = database.users.find(u => u.name.toLowerCase() === username.toLowerCase());
+
+    if (!user) {
+        print("error", "Usuário não encontrado");
+        return;
+    }
+
+    if (user.password !== password) {
+        print("error", "Senha incorreta");
+        return;
+    }
+
+    loggedIn = true;
+    currentUser = user.name.toUpperCase();
+    print("success", `Login bem-sucedido. Bem-vindo, ${currentUser}`);
+
+    // update finder after successful login
+    updateFinder();
+}
+
+function openLogin() {
+    document.getElementById("loginOverlay").style.display = "block";
+    document.getElementById("loginUser").value = "";
+    document.getElementById("loginPass").value = "";
+    setTimeout(() => {
+        document.getElementById("loginUser").focus();
+    }, 50);
+}
+
+function closeLogin() {
+    document.getElementById("loginOverlay").style.display = "none";
+}
+
+function submitLogin() {
+    const user = document.getElementById("loginUser").value.trim();
+    const pass = document.getElementById("loginPass").value.trim();
+
+    if (!user || !pass) {
+        print("error", "Credenciais incompletas");
+        return;
+    }
+
+    closeLogin();
+    attemptLogin(user, pass);
+}
+
+
+/* =========================================================
+    INTERPRETADOR DE COMANDOS
+========================================================= */
+
+function processCommand(cmd) {
+    const args = cmd.trim().split(/\s+/);
+    const command = args[0].toLowerCase();
+
+    switch (command) {
+
+        case "help":
+            print("out",
+`======================================================
+login
+logout
+status
+clear
+======================================================`);
+            break;
+
+        case "clear":
+            output.innerHTML = "";
+            break;
+
+        case "login":
+            if (loggedIn) {
+                print("error", "Você já está logado");
+                break;
+            }
+            openLogin();
+            break;
+
+        case "logout":
+            if (!loggedIn) {
+                print("error", "Você não está logado");
+                break;
+            }
+            loggedIn = false;
+            currentUser = null;
+            updateFinder();
+            print("success", "Logout efetuado");
+            break;
+
+        case "status":
+        if (!loggedIn) {
+            print("error", "Acesso negado. Nenhum operador autenticado.");
+            break;
+        }
+
+        print("progress", "Sincronizando dados biométricos do núcleo H40N...", true);
+
+        runAfterProgress(() => {
+
+        print("out", "=======================================================");
+        print("out", `Operador ativo: ${currentUser}`);
+        print("out", "");
+
+        print("out", `Corrupção ECH0:               ${renderBar(noahStatus.corrupcaoECH0)}`);
+        print("out", `Integridade física:           ${renderBar(noahStatus.integridadeFisica)}`);
+        print("out", `Estabilidade da memória:      ${renderBar(noahStatus.memoria)}`);
+        print("out", `Processamento neural:         ${renderBar(noahStatus.processamentoNeural)}`);
+        print("out", `Variância emocional:          ${renderBar(noahStatus.varianciaEmocional)}`);
+        print("out", "=======================================================");
+
+        print("success", "Diagnóstico concluído.");
+        });
+
+        break;
+
+        default:
+            print("error", `Comando não encontrado: ${command}`);
+            break;
+        }
+}
+
+/* =========================================================
+    FINDER DO USUÁRIO
+========================================================= */
+
+/* PASTAS POR USUÁRIO */
+const userFolders = {
+    H40N: [
+        "arquivos.amanecer",
+        "arquivos.kitsune",
+        "arquivos.operador"
+    ],
+
+    ECH0: [
+        "anomaly",
+        "memories",
+        "integrity"
+    ]
+};
+
+const folderIcons = {
+    "arquivos.amanecer": "https://cdn-icons-png.flaticon.com/512/716/716784.png",
+    "arquivos.kitsune": "https://cdn-icons-png.flaticon.com/512/716/716784.png",
+    "arquivos.operador": "https://cdn-icons-png.flaticon.com/512/716/716784.png",
+    "anomaly": "https://cdn-icons-png.flaticon.com/512/716/716784.png",
+    "memories": "https://cdn-icons-png.flaticon.com/512/716/716784.png",
+    "integrity": "https://cdn-icons-png.flaticon.com/512/716/716784.png"
+};
+
+const fileSystem = {
+    "arquivos.amanecer": {
+        "relatorio-amanecer": "docs/H40N/arq-amanecer_relatorio.html",
+        "experimento-amanecer": "docs/H40N/arq-amanecer_experimento.html"
+    },
+    "arquivos.kitsune": {
+        "relatorio-yokai": "docs/H40N/arq-kitsune_relatorio.html",
+        "anexos-yokai": "docs/H40N/arq-kitsune_anexos.html"
+    },
+    "arquivos.operador": {
+        "operador-h40n": "docs/H40N/arq-noah_operador.html",
+        "memories-h40n": "docs/H40N/arq-noah_memories.html",
+        "thoughts-h40n":"docs/H40N/arq-noah_thoughts.html"
+    },
+    "anomaly": {
+        "anomaly-monitor": "docs/ECH0/anomaly_monitor.html",
+        "noah_anchor": "docs/ECH0/anchor_noah.html",
+        "temporal_map": "frag/Frag-TPD3.png"
+    },
+    "integrity": {
+        "quantum_sys": "docs/error403.html",
+        "node-n.root": "docs/error403.html"
+    }
+};
+
+function updateFinder() {
+    const holder = document.getElementById("file-list");
+    holder.innerHTML = "";
+
+    if (!loggedIn || !currentUser) {
+        holder.innerHTML =
+            `<div style="opacity:.6;font-size:12px;">Login necessário para visualizar conteúdo.</div>`;
+        return;
+    }
+
+    const foldersAllowed = userFolders[currentUser];
+    if (!foldersAllowed) {
+        holder.innerHTML =
+            `<div style="opacity:.6;font-size:12px;">Nenhuma pasta disponível.</div>`;
+        print("error", "Nenhuma pasta permitida para este usuário");
+        return;
+    }
+
+    foldersAllowed.forEach(folder => {
+        const item = document.createElement("div");
+        item.className = "file-item";
+        item.innerHTML = `
+            <img src="${folderIcons[folder]}" class="file-icon">
+            <div class="file-label">${folder}/</div>`;
+        item.onclick = () => openFolder(folder);
+        holder.appendChild(item);
+    });
+}
+
+
+function openFolder(folder) {
+
+    print("progress", `Abrindo pasta '${folder}'...`, true);
+
+    runAfterProgress(() => {
+
+        print("success", `Pasta '${folder}' aberta com sucesso`);
+
+        const holder = document.getElementById("file-list");
+        holder.innerHTML = "";
+
+        const back = document.createElement("div");
+        back.textContent = "← Voltar";
+        back.style.cursor = "pointer";
+        back.style.marginBottom = "15px";
+        back.style.opacity = "0.8";
+        back.style.fontSize = "13px";
+        back.onclick = updateFinder;
+        holder.appendChild(back);
+
+        const files = fileSystem[folder];
+        Object.keys(files).forEach(file => {
+            const div = document.createElement("div");
+            div.className = "file-item";
+            div.innerHTML = `
+                <img src="${getFileIcon(file)}" class="file-icon">
+                <div class="file-label">${file}</div>`;
+            div.onclick = () => openFileInViewer(file, files[file]);
+            holder.appendChild(div);
+        });
+
+    });
+}
+
+let lastOpenedFile = null;
+
+function closeViewer() {
+    const overlay = document.getElementById("viewerOverlay");
+    const frame = document.getElementById("viewerFrame");
+
+    frame.src = "";
+    overlay.style.display = "none";
+
+    if (lastOpenedFile) {
+        print("error", `Arquivo '${lastOpenedFile}' fechado`);
+        lastOpenedFile = null; // resetar
+    } else {
+        print("error", "Viewer fechado");
+    }
+}
+
+/* =========================================================
+    VIEWER DOS ARQUIVOS
+========================================================= */
+
+function openFileInViewer(filename, path) {
+    lastOpenedFile = filename;
+
+    print("progress", `Carregando '${filename}'...`, true);
+
+    runAfterProgress(() => {
+        if (path.includes("error403") || path.includes("node-n_error")) {
+            print("error", `Falha ao abrir arquivo '${filename}'`);
+            return;
+        }
+
+        print("success", `Arquivo '${filename}' aberto`);
+        document.getElementById("viewerFrame").src = path;
+        document.getElementById("viewerOverlay").style.display = "block";
+    });
+}
+
+
+
+
+/* =========================================================
+    BOOT MESSAGES
+========================================================= */
+
+print("success", "Conectado a H40N - N.ROOT");
+print("out", "Digite 'help' para ver os comandos disponíveis");
+
+</script>
+
+</body>
+</html>

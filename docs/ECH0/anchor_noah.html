@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>ANCHOR :: NOAH</title>
+
+<style>
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    padding: 20px;
+    font-family: "Courier New", monospace;
+    background: #050505;
+    color: #d0d0d0;
+}
+
+.header {
+    border: 2px solid #333;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    background: #0d0d0d;
+    font-size: 1.2em;
+    display: flex;
+    justify-content: space-between;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap: 16px;
+}
+
+.block {
+    border: 2px solid #222;
+    background: #0d0d0d;
+    padding: 14px;
+}
+
+.block-title {
+    font-weight: bold;
+    margin-bottom: 10px;
+    color: #9e9e9e;
+}
+
+.code {
+    background: #000;
+    padding: 12px;
+    font-size: 0.85em;
+    color: #9ad1ff;
+    height: 300px;
+    overflow-y: auto;
+    border: 1px solid #222;
+}
+
+.metric {
+    margin-bottom: 10px;
+}
+
+.bar {
+    height: 10px;
+    background: #222;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-top: 4px;
+}
+
+.fill {
+    height: 100%;
+    width: 0%;
+    background: #7a0a0a;
+    transition: width 0.6s linear;
+}
+
+.log {
+    background: #000;
+    padding: 10px;
+    font-size: 0.8em;
+    height: 140px;
+    overflow-y: auto;
+    border: 1px solid #222;
+}
+
+.mutated {
+    color: #ff6b6b;
+    border-color: #400;
+}
+</style>
+</head>
+
+<body>
+
+<div class="grid">
+
+    <!-- BLOCO ESQUERDO -->
+    <div class="block">
+        <div class="block-title">ANCHOR CORE</div>
+
+        <div class="metric">
+            consciência
+            <div class="bar">
+                <div class="fill" style="width: 92%;"></div>
+            </div>
+        </div>
+
+        <div class="metric">
+            identidade contínua
+            <div class="bar">
+                <div class="fill" style="width: 89%;"></div>
+            </div>
+        </div>
+
+        <div class="metric">
+            memória integrada
+            <div class="bar">
+                <div class="fill" style="width: 91%;"></div>
+            </div>
+        </div>
+
+        <div class="metric">
+            coerência temporal
+            <div class="bar">
+                <div class="fill" style="width: 100%;"></div>
+            </div>
+        </div>
+
+        <div class="metric">
+            influência externa
+            <div class="bar">
+                <div class="fill" style="width: 3%;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- BLOCO DIREITO -->
+    <div class="block">
+        <div class="block-title">ANCHOR PROCESS</div>
+
+        <div class="code">
+            bind_identity();<br>
+            lock_memory_segments();<br>
+            normalize_time_offset();<br>
+            suppress_reflex_layer();<br>
+            validate_self_reference();<br><br>
+
+            anchor_state = STABLE;<br>
+            rollback = DISABLED;<br>
+            exit_condition = NULL;
+        </div>
+    </div>
+
+    <!-- LOG -->
+    <div class="block">
+        <div class="block-title">ANCHOR LOG</div>
+
+        <div class="log">
+            [00:00:01] identity hash verified<br>
+            [00:00:03] memory drift within tolerance<br>
+            [00:00:06] temporal loop pressure stabilized<br>
+            [00:00:09] external signal ignored<br>
+            [00:00:12] anchor reaffirmed
+        </div>
+    </div>
+
+    <!-- MONITORAMENTO -->
+    <div class="block">
+        <div class="block-title">INTEGRITY WATCH</div>
+
+        <div class="metric">
+            fragmentação psíquica
+            <div class="bar">
+                <div class="fill" style="width: 7%;"></div>
+            </div>
+        </div>
+
+        <div class="metric">
+            ressonância anômala
+            <div class="bar">
+                <div class="fill" style="width: 4%;"></div>
+            </div>
+        </div>
+
+        <div class="metric">
+            eco residual
+            <div class="bar">
+                <div class="fill" style="width: 2%;"></div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>
