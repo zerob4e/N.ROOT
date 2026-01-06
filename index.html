@@ -465,13 +465,18 @@ input.addEventListener("keydown", function(e) {
         e.preventDefault();
         const cmd = input.value.trim();
         if (cmd === "") return;
-        print("cmd", "> " + cmd);
-        // push to history
+    
+        // Só imprime o comando se NÃO estiver em modo chat
+        if (mode !== "chat") {
+            print("cmd", "> " + cmd);
+        }
+    
         commandHistory.push(cmd);
-        historyIndex = -1; // reset so next ArrowUp starts from last
+        historyIndex = -1;
         processCommand(cmd);
         input.value = "";
     }
+
 });
 
 function renderBar(value) {
