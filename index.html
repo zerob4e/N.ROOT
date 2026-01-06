@@ -308,7 +308,24 @@
      JAVASCRIPT COMPLETO
 ============================== -->
 
-<script>
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getDatabase, ref, push, onChildAdded } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+const firebaseConfig = {
+    apiKey: "AIzaSyBF2SS3AannotAsRR8s4wFDlKZfdWnlaNU",
+    authDomain: "h40n-terminal.firebaseapp.com",
+    projectId: "h40n-terminal",
+    storageBucket: "h40n-terminal.firebasestorage.app",
+    messagingSenderId: "704571577542",
+    appId: "1:704571577542:web:32379144889c8c32c9b3c7",
+    databaseURL: "https://h40n-terminal-default-rtdb.firebaseio.com"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
 /* =========================================================
     SISTEMA DE OUTPUT
 ========================================================= */
@@ -339,6 +356,54 @@ function getFileIcon(fileName) {
     if (fileName.includes("experimento")) return fileIcons.experimento;
     return fileIcons.default;
 }
+
+/* =========================================================
+    FUNÇÃO CHAT
+========================================================= */
+let mode = "terminal"; // terminal | chat
+let chatRef = null;
+
+function parseChatMessage(input) {
+    const txt = input.trim();
+
+    if (txt.toUpperCase().startsWith("H40N ")) {
+        return { user: "H40N", text: txt.slice(5) };
+    }
+
+    if (txt.toUpperCase().startsWith("ECH0 ")) {
+        return { user: "ECH0", text: txt.slice(5) };
+    }
+
+    return { user: "visitante", text: txt };
+}
+
+function connectH40N() {
+    print("progress", "[ iniciando handshake com H40N ]", true);
+
+    runAfterProgress(() => {
+        mode = "chat";
+        chatRef = ref(db, "rooms/H40N/messages");
+
+        print("success", "[ canal H40N estabelecido ]");
+        print("out", "Digite mensagens ou 'exit' para encerrar");
+
+        onChildAdded(chatRef, (snap) => {
+            const { user, text } = snap.val();
+            print("out", `${user}> ${text}`);
+        });
+    });
+}
+
+function sendChatMessage(raw) {
+    const msg = parseChatMessage(raw);
+
+    push(chatRef, {
+        user: msg.user,
+        text: msg.text,
+        time: Date.now()
+    });
+}
+
 
 /* =========================================================
     FUNÇÃO PRINT — AGORA SUPORTA MENSAGENS TEMPORÁRIAS (process)
@@ -502,6 +567,19 @@ function processCommand(cmd) {
     const args = cmd.trim().split(/\s+/);
     const command = args[0].toLowerCase();
 
+    // MODO CHAT
+    if (mode === "chat") {
+        if (cmd.toLowerCase() === "exit") {
+            mode = "terminal";
+            print("success", "[ conexão H40N encerrada ]");
+            return;
+        }
+
+        sendChatMessage(cmd);
+        return;
+    }
+
+
     switch (command) {
 
         case "help":
@@ -511,6 +589,7 @@ login
 logout
 status
 clear
+connect to h40n
 ======================================================`);
             break;
 
@@ -542,6 +621,15 @@ clear
             print("error", "Acesso negado. Nenhum operador autenticado.");
             break;
         }
+
+        case "connect":
+        if (cmd.toLowerCase() === "connect to h40n") {
+            connectH40N();
+        } else {
+            print("error", "Destino desconhecido");
+        }
+        break;
+
 
         print("progress", "Sincronizando dados biométricos do núcleo H40N...", true);
 
@@ -735,6 +823,5 @@ print("success", "Conectado a H40N - N.ROOT");
 print("out", "Digite 'help' para ver os comandos disponíveis");
 
 </script>
-
 </body>
 </html>
