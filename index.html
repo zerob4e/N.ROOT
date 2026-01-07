@@ -571,11 +571,16 @@ clear
                 print("error", "Você não está logado");
                 break;
             }
+
             loggedIn = false;
             currentUser = null;
+
             updateFinder();
-            print("success", "Logout efetuado");
-            break;
+            updateAuthButton(); // 👈 ISSO AQUI resolve tudo
+
+            print("success", "Sessão encerrada. Operador desconectado do núcleo.");
+        break;
+
 
         case "status":
         if (!loggedIn) {
@@ -788,7 +793,7 @@ function updateAuthButton() {
 
     if (loggedIn && currentUser) {
         btn.textContent = currentUser;
-        btn.style.borderColor = "#00e676";
+        btn.style.borderColor = "#333";
         btn.style.color = "#00e676";
         btn.onclick = () => {
             print("out", `Operador ativo: ${currentUser}`);
