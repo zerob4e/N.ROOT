@@ -3,85 +3,117 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>H40N - N.ROOT | TERMINAL V9.2 CHAT</title>
+<title>H40N - N.ROOT | TERMINAL V9.5 CHAT</title>
 
 <style>
 body {
-    background: #0a0a0a;
-    margin: 0;
-    padding: 0;
-    font-family: monospace;
-    color: #e5e5e5;
+    background:#0a0a0a;
+    margin:0;
+    padding:0;
+    font-family:monospace;
+    color:#e5e5e5;
 }
 
 .terminal-wrapper {
-    width: 90%;
-    max-width: 1200px;
-    margin: 40px auto;
-    border: 1px solid #333;
-    border-radius: 8px;
-    overflow: hidden;
-    background: #111;
-    box-shadow: 0px 0px 20px rgba(0,0,0,0.6);
-    position: relative;
+    width:90%;
+    max-width:1200px;
+    margin:40px auto;
+    border:1px solid #333;
+    border-radius:8px;
+    overflow:hidden;
+    background:#111;
+    box-shadow:0px 0px 20px rgba(0,0,0,0.6);
+    position:relative;
 }
 
 .terminal-header {
-    background: #1a1a1a;
-    padding: 10px;
-    border-bottom: 1px solid #333;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    position: relative;
+    background:#1a1a1a;
+    padding:10px;
+    border-bottom:1px solid #333;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    position:relative;
 }
 
-.dot { width: 12px; height: 12px; border-radius: 50%; }
-.dot.red { background: #ff5f56; }
-.dot.yellow { background: #ffbd2e; }
-.dot.green { background: #27c93f; }
+.dot { width:12px; height:12px; border-radius:50%; }
+.dot.red { background:#ff5f56; cursor:pointer; }
+.dot.yellow { background:#ffbd2e; }
+.dot.green { background:#27c93f; }
 
-.terminal-title { flex: 1; text-align: center; opacity: 0.7; }
+.terminal-title { flex:1; text-align:center; opacity:0.7; }
 
 .presence {
-    position: absolute;
-    right: 10px;
-    top: 50%;
-    transform: translateY(-50%);
-    font-size: 12px;
-    letter-spacing: 1px;
-    padding: 3px 8px;
-    border-radius: 999px;
-    border: 1px solid;
-    opacity: 0.9;
+    position:absolute;
+    right:10px;
+    top:50%;
+    transform:translateY(-50%);
+    font-size:12px;
+    letter-spacing:1px;
+    padding:3px 8px;
+    border-radius:999px;
+    border:1px solid;
+    opacity:0.9;
 }
 .presence.offline{ color:#ff4d4d; border-color:#ff4d4d; }
 .presence.noah{ color:#3ee9e9; border-color:#3ee9e9; }
 .presence.ech0{ color:#ffa200; border-color:#ffa200; }
 .presence.both{ color:#b388ff; border-color:#b388ff; }
 
-#main-grid { display: flex; height: 80vh; }
-
-#left-terminal { width: 50%; display: flex; flex-direction: column; border-right: 1px solid #333; }
-
-#output { flex: 1; overflow-y: auto; padding: 15px; line-height: 1.45em; white-space: pre-wrap; }
+#main-grid { display:flex; height:80vh; }
+#left-terminal { width:50%; display:flex; flex-direction:column; border-right:1px solid #333; }
+#output { flex:1; overflow-y:auto; padding:15px; line-height:1.45em; white-space:pre-wrap; }
 .line{ margin:6px 0; }
 .user-INTRUSO{ color:#9aa4ac; }
 .user-NOAH{ color:#3ee9e9; }
 .user-ECH0{ color:#ffa200; }
 .user-SYSTEM{ color:#ff4d4d; }
 
-.terminal-input-area { display: flex; gap: 10px; padding: 12px; background: #1a1a1a; border-top: 1px solid #333; }
+.terminal-input-area { display:flex; gap:10px; padding:12px; background:#1a1a1a; border-top:1px solid #333; }
 #prompt{ color:#00e676; font-weight:bold; }
-#chatInput { flex: 1; background: transparent; border: 1px solid #333; color: #e5e5e5; padding: 8px; font-family: monospace; }
+#chatInput { flex:1; background:transparent; border:1px solid #333; color:#e5e5e5; padding:8px; font-family:monospace; }
 
-/* Finder à direita */
-#finder { width: 50%; background: #111; display: flex; flex-direction: column; overflow-y: auto; }
-#finder-header { padding: 12px; border-bottom: 1px solid #333; color: #c1c1c1; font-size: 13px; letter-spacing: 1px; }
-#file-list { padding: 10px; display: flex; flex-direction: column; gap: 18px; }
-.file-item { display: flex; align-items: center; gap: 12px; padding: 8px; cursor: pointer; border-radius: 6px; transition: 0.15s; background: #161616; border: 1px solid #222; }
-.file-item:hover { background: #222; }
-.file-label { font-size: 13px; color: #e5e5e5; letter-spacing: 0.5px; }
+#finder { width:50%; background:#111; display:flex; flex-direction:column; overflow-y:auto; }
+#finder-header { padding:12px; border-bottom:1px solid #333; color:#c1c1c1; font-size:13px; letter-spacing:1px; }
+#file-list { padding:10px; display:flex; flex-direction:column; gap:18px; }
+.file-item { display:flex; align-items:center; gap:12px; padding:8px; cursor:pointer; border-radius:6px; transition:0.15s; background:#161616; border:1px solid #222; }
+.file-item:hover { background:#222; }
+.file-label { font-size:13px; color:#e5e5e5; letter-spacing:0.5px; }
+
+/* Overlay padrão do terminal */
+#viewerOverlay {
+    display:none;
+    position:absolute;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    z-index:999;
+    background: rgba(0,0,0,0.75);
+    backdrop-filter: blur(3px);
+}
+
+#viewerOverlay .overlay-terminal {
+    width:90%;
+    height:85%;
+    margin:40px auto;
+    background:#111;
+    border:1px solid #333;
+    border-radius:8px;
+    display:flex;
+    flex-direction:column;
+    overflow:hidden;
+}
+
+#viewerOverlay .overlay-terminal .terminal-header {
+    padding:10px;
+}
+
+#viewerOverlay iframe {
+    flex:1;
+    border:none;
+    background:#0a0a0a;
+}
 </style>
 </head>
 
@@ -93,12 +125,11 @@ body {
     <div class="dot red"></div>
     <div class="dot yellow"></div>
     <div class="dot green"></div>
-    <div class="terminal-title">H40N - N.ROOT | TERMINAL V9.2 CHAT</div>
+    <div class="terminal-title">H40N - N.ROOT | TERMINAL V9.5 CHAT</div>
     <span id="presenceIndicator" class="presence offline">OPERADORES OFF</span>
 </div>
 
 <div id="main-grid">
-
     <div id="left-terminal">
         <div id="output"></div>
         <div class="terminal-input-area">
@@ -111,7 +142,19 @@ body {
         <div id="finder-header">Arquivos</div>
         <div id="file-list"></div>
     </div>
+</div>
 
+<!-- Overlay com header padrão e bolinha vermelha funcional -->
+<div id="viewerOverlay">
+    <div class="overlay-terminal">
+        <div class="terminal-header">
+            <div class="dot red" id="closeOverlayBtn"></div>
+            <div class="dot yellow"></div>
+            <div class="dot green"></div>
+            <div class="terminal-title">VISUALIZADOR</div>
+        </div>
+        <iframe id="viewerFrame"></iframe>
+    </div>
 </div>
 
 <script type="module">
@@ -134,12 +177,10 @@ const db = getFirestore(app);
 const output = document.getElementById("output");
 const input = document.getElementById("chatInput");
 const presenceIndicator = document.getElementById("presenceIndicator");
-
-/* ESTADO */
 let currentUser = "INTRUSO";
 let operatorsOnline = { NOAH:false, ECH0:false };
 
-/* FUNÇÃO PRESENÇA */
+/* PRESENÇA */
 function updatePresenceUI(){
   presenceIndicator.className = "presence";
   if (operatorsOnline.NOAH && operatorsOnline.ECH0) { presenceIndicator.textContent = "NOAH + ECH0"; presenceIndicator.classList.add("both"); return; }
@@ -149,107 +190,93 @@ function updatePresenceUI(){
 }
 updatePresenceUI();
 
-/* LISTENER FIRESTORE */
+/* CHAT FIRESTORE */
 const q = query(collection(db, "messages"), orderBy("createdAt"));
 onSnapshot(q, (snapshot) => {
   snapshot.docChanges().forEach(change => {
-    if (change.type !== "added") return;
+    if (change.type!=="added") return;
     const data = change.doc.data();
     if (!data.author) return;
-    if (data.type === "LOGIN") { operatorsOnline[data.author] = true; updatePresenceUI(); return; }
-    if (data.type === "LOGOUT") { operatorsOnline[data.author] = false; updatePresenceUI(); return; }
-    if (data.type === "CLEAR") { output.innerHTML = ""; return; }
+    if (data.type==="LOGIN") { operatorsOnline[data.author]=true; updatePresenceUI(); return; }
+    if (data.type==="LOGOUT") { operatorsOnline[data.author]=false; updatePresenceUI(); return; }
+    if (data.type==="CLEAR") { output.innerHTML=""; return; }
     if (!data.text) return;
-    const line = document.createElement("div");
-    line.className = "line user-" + data.author;
-    line.textContent = data.author + "> " + data.text;
+    const line=document.createElement("div");
+    line.className="line user-"+data.author;
+    line.textContent=data.author+"> "+data.text;
     output.appendChild(line);
-    output.scrollTop = output.scrollHeight;
+    output.scrollTop=output.scrollHeight;
   });
 });
 
-/* COMANDOS CHAT */
+/* COMANDOS */
 function handleCommand(raw){
-  const cmd = raw.trim();
-  if (cmd.toLowerCase() === "login noah") { currentUser = "NOAH"; return { author:"NOAH", text:"", type:"LOGIN" }; }
-  if (cmd.toLowerCase() === "login echo" || cmd.toLowerCase() === "login ech0") { currentUser = "ECH0"; return { author:"ECH0", text:"", type:"LOGIN" }; }
-  if (cmd.toLowerCase() === "logout") { const oldUser = currentUser; currentUser = "INTRUSO"; return { author: oldUser, text:"Operador desconectado", type:"LOGOUT" }; }
-  if (cmd.toLowerCase() === "clear") { return { author:"SYSTEM", text:"", type:"CLEAR" }; }
-  if (cmd.toLowerCase().startsWith("nick ")) { 
-    const newNick = cmd.slice(5).trim(); 
-    if (!newNick) return null;
-    const oldUser = currentUser; 
-    currentUser = newNick; 
-    return { author:"SYSTEM", text:`Nick alterado de ${oldUser} para ${currentUser}`, type:null };
-  }
+  const cmd=raw.trim();
+  if(cmd.toLowerCase()==="login noah"){currentUser="NOAH"; return {author:"NOAH", text:"", type:"LOGIN"};}
+  if(cmd.toLowerCase()==="login echo"||cmd.toLowerCase()==="login ech0"){currentUser="ECH0"; return {author:"ECH0", text:"", type:"LOGIN"};}
+  if(cmd.toLowerCase()==="logout"){const oldUser=currentUser; currentUser="INTRUSO"; return {author:oldUser,text:"Operador desconectado",type:"LOGOUT"};}
+  if(cmd.toLowerCase()==="clear"){return {author:"SYSTEM", text:"", type:"CLEAR"};}
+  if(cmd.toLowerCase().startsWith("nick ")){const newNick=cmd.slice(5).trim(); if(!newNick) return null; const oldUser=currentUser; currentUser=newNick; return {author:"SYSTEM", text:`Nick alterado de ${oldUser} para ${currentUser}`, type:null};}
   return null;
 }
 
-/* ENVIO MENSAGENS */
-input.addEventListener("keydown", async (e) => {
-  if (e.key !== "Enter" || !input.value.trim()) return;
-  const raw = input.value.trim();
-  const command = handleCommand(raw);
-  await addDoc(collection(db, "messages"), {
-    author: command ? command.author : currentUser,
-    text: command ? command.text : raw,
-    type: command?.type || null,
+input.addEventListener("keydown", async (e)=>{
+  if(e.key!=="Enter" || !input.value.trim()) return;
+  const raw=input.value.trim();
+  const command=handleCommand(raw);
+  await addDoc(collection(db,"messages"),{
+    author: command?command.author:currentUser,
+    text: command?command.text:raw,
+    type: command?.type||null,
     createdAt: serverTimestamp()
   });
-  input.value = "";
+  input.value="";
 });
 
 /* FINDER / ARQUIVOS */
-const fileSystem = {
-    "arquivos.amanecer": {
-        "relatorio-amanecer": "docs/H40N/arq-amanecer_relatorio.html",
-        "experimento-amanecer": "docs/H40N/arq-amanecer_experimento.html"
-    },
-    "arquivos.kitsune": {
-        "relatorio-yokai": "docs/H40N/arq-kitsune_relatorio.html",
-        "anexos-yokai": "docs/H40N/arq-kitsune_anexos.html"
-    },
-    "arquivos.operador": {
-        "operador-h40n": "docs/H40N/arq-noah_operador.html",
-        "memories-h40n": "docs/H40N/arq-noah_memories.html",
-        "thoughts-h40n":"docs/H40N/arq-noah_thoughts.html"
-    },
-    "anomaly": {
-        "anomaly-monitor":"docs/ECH0/anomaly_monitor.html",
-        "noah_anchor": "docs/ECH0/anchor_noah.html"
-    }
+const fileSystem={
+  "arquivos.amanecer":{"relatorio-amanecer":"docs/H40N/arq-amanecer_relatorio.html","experimento-amanecer":"docs/H40N/arq-amanecer_experimento.html"},
+  "arquivos.kitsune":{"relatorio-yokai":"docs/H40N/arq-kitsune_relatorio.html","anexos-yokai":"docs/H40N/arq-kitsune_anexos.html"},
+  "arquivos.operador":{"operador-h40n":"docs/H40N/arq-noah_operador.html","memories-h40n":"docs/H40N/arq-noah_memories.html","thoughts-h40n":"docs/H40N/arq-noah_thoughts.html"},
+  "anomaly":{"anomaly-monitor":"docs/ECH0/anomaly_monitor.html","noah_anchor":"docs/ECH0/anchor_noah.html"}
 };
 
-function updateFinder() {
-    const holder = document.getElementById("file-list");
-    holder.innerHTML = "";
-    Object.keys(fileSystem).forEach(folder => {
-        const div = document.createElement("div");
-        div.className = "file-item";
-        div.innerHTML = `<div class="file-label">${folder}/</div>`;
-        div.onclick = () => openFolder(folder);
-        holder.appendChild(div);
-    });
-}
-function openFolder(folder) {
-    const holder = document.getElementById("file-list");
-    holder.innerHTML = "";
-    const back = document.createElement("div");
-    back.textContent = "← Voltar";
-    back.style.cursor = "pointer";
-    back.onclick = updateFinder;
-    holder.appendChild(back);
-    Object.entries(fileSystem[folder]).forEach(([file, path]) => {
-        const div = document.createElement("div");
-        div.className = "file-item";
-        div.innerHTML = `<div class="file-label">${file}</div>`;
-        div.onclick = () => window.open(path,"_blank");
-        holder.appendChild(div);
-    });
+function updateFinder(){
+  const holder=document.getElementById("file-list"); holder.innerHTML="";
+  Object.keys(fileSystem).forEach(folder=>{
+    const div=document.createElement("div");
+    div.className="file-item"; div.innerHTML=`<div class="file-label">${folder}/</div>`;
+    div.onclick=()=>openFolder(folder);
+    holder.appendChild(div);
+  });
 }
 
-window.addEventListener("DOMContentLoaded", () => { updateFinder(); });
+function openFolder(folder){
+  const holder=document.getElementById("file-list"); holder.innerHTML="";
+  const back=document.createElement("div"); back.textContent="← Voltar"; back.style.cursor="pointer"; back.onclick=updateFinder; holder.appendChild(back);
+  Object.entries(fileSystem[folder]).forEach(([file,path])=>{
+    const div=document.createElement("div"); div.className="file-item"; div.innerHTML=`<div class="file-label">${file}</div>`;
+    div.onclick=()=>openFile(path); holder.appendChild(div);
+  });
+}
+
+function openFile(path){
+  document.getElementById("viewerFrame").src=path;
+  document.getElementById("viewerOverlay").style.display="block";
+}
+
+function closeViewer(){
+  document.getElementById("viewerOverlay").style.display="none";
+  document.getElementById("viewerFrame").src="";
+  document.getElementById("output").scrollTop = document.getElementById("output").scrollHeight;
+}
+
+// botão vermelho funcional
+document.getElementById("closeOverlayBtn").addEventListener("click", closeViewer);
+
+window.addEventListener("DOMContentLoaded", ()=>{ updateFinder(); });
 </script>
 
+</div>
 </body>
 </html>
