@@ -68,6 +68,7 @@ body {
 .user-NOAH{ color:#3ee9e9; }
 .user-ECH0{ color:#ffa200; }
 .user-SYSTEM{ color:#ff4d4d; }
+.user-SYSTEMA{ color:#ff2e88; }
 
 .terminal-input-area { display:flex; gap:10px; padding:12px; background:#1a1a1a; border-top:1px solid #333; }
 #prompt{ color:#00e676; font-weight:bold; }
@@ -80,14 +81,11 @@ body {
 .file-item:hover { background:#222; }
 .file-label { font-size:13px; color:#e5e5e5; letter-spacing:0.5px; }
 
-/* Overlay padrão do terminal */
 #viewerOverlay {
     display:none;
     position:absolute;
-    top:0;
-    left:0;
-    width:100%;
-    height:100%;
+    top:0; left:0;
+    width:100%; height:100%;
     z-index:999;
     background: rgba(0,0,0,0.75);
     backdrop-filter: blur(3px);
@@ -103,10 +101,6 @@ body {
     display:flex;
     flex-direction:column;
     overflow:hidden;
-}
-
-#viewerOverlay .overlay-terminal .terminal-header {
-    padding:10px;
 }
 
 #viewerOverlay iframe {
@@ -144,7 +138,6 @@ body {
     </div>
 </div>
 
-<!-- Overlay com header padrão e bolinha vermelha funcional -->
 <div id="viewerOverlay">
     <div class="overlay-terminal">
         <div class="terminal-header">
@@ -170,6 +163,7 @@ const firebaseConfig = {
   messagingSenderId: "307385370017",
   appId: "1:307385370017:web:adc1b52765f34bf94177e0"
 };
+
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
@@ -177,30 +171,33 @@ const db = getFirestore(app);
 const output = document.getElementById("output");
 const input = document.getElementById("chatInput");
 const presenceIndicator = document.getElementById("presenceIndicator");
+
 let currentUser = "INTRUSO";
 let operatorsOnline = { NOAH:false, ECH0:false };
 
 /* PRESENÇA */
 function updatePresenceUI(){
-  presenceIndicator.className = "presence";
-  if (operatorsOnline.NOAH && operatorsOnline.ECH0) { presenceIndicator.textContent = "NOAH + ECH0"; presenceIndicator.classList.add("both"); return; }
-  if (operatorsOnline.NOAH) { presenceIndicator.textContent = "NOAH ONLINE"; presenceIndicator.classList.add("noah"); return; }
-  if (operatorsOnline.ECH0) { presenceIndicator.textContent = "ECH0 ONLINE"; presenceIndicator.classList.add("ech0"); return; }
-  presenceIndicator.textContent = "OPERADORES OFF"; presenceIndicator.classList.add("offline");
+  presenceIndicator.className="presence";
+  if (operatorsOnline.NOAH && operatorsOnline.ECH0){ presenceIndicator.textContent="NOAH + ECH0"; presenceIndicator.classList.add("both"); return; }
+  if (operatorsOnline.NOAH){ presenceIndicator.textContent="NOAH ONLINE"; presenceIndicator.classList.add("noah"); return; }
+  if (operatorsOnline.ECH0){ presenceIndicator.textContent="ECH0 ONLINE"; presenceIndicator.classList.add("ech0"); return; }
+  presenceIndicator.textContent="OPERADORES OFF";
+  presenceIndicator.classList.add("offline");
 }
 updatePresenceUI();
 
-/* CHAT FIRESTORE */
+/* CHAT */
 const q = query(collection(db, "messages"), orderBy("createdAt"));
-onSnapshot(q, (snapshot) => {
-  snapshot.docChanges().forEach(change => {
-    if (change.type!=="added") return;
-    const data = change.doc.data();
-    if (!data.author) return;
-    if (data.type==="LOGIN") { operatorsOnline[data.author]=true; updatePresenceUI(); return; }
-    if (data.type==="LOGOUT") { operatorsOnline[data.author]=false; updatePresenceUI(); return; }
-    if (data.type==="CLEAR") { output.innerHTML=""; return; }
-    if (!data.text) return;
+onSnapshot(q, (snapshot)=>{
+  snapshot.docChanges().forEach(change=>{
+    if(change.type!=="added") return;
+    const data=change.doc.data();
+
+    if(data.type==="LOGIN"){ operatorsOnline[data.author]=true; updatePresenceUI(); return; }
+    if(data.type==="LOGOUT"){ operatorsOnline[data.author]=false; updatePresenceUI(); return; }
+    if(data.type==="CLEAR"){ output.innerHTML=""; return; }
+    if(!data.text) return;
+
     const line=document.createElement("div");
     line.className="line user-"+data.author;
     line.textContent=data.author+"> "+data.text;
@@ -209,53 +206,48 @@ onSnapshot(q, (snapshot) => {
   });
 });
 
-/* COMANDOS */
-function handleCommand(raw){
-  const cmd=raw.trim();
-  if(cmd.toLowerCase()==="login noah"){currentUser="NOAH"; return {author:"NOAH", text:"", type:"LOGIN"};}
-  if(cmd.toLowerCase()==="login echo"||cmd.toLowerCase()==="login ech0"){currentUser="ECH0"; return {author:"ECH0", text:"", type:"LOGIN"};}
-  if(cmd.toLowerCase()==="logout"){const oldUser=currentUser; currentUser="INTRUSO"; return {author:oldUser,text:"Operador desconectado",type:"LOGOUT"};}
-  if(cmd.toLowerCase()==="clear"){return {author:"SYSTEM", text:"", type:"CLEAR"};}
-  if(cmd.toLowerCase().startsWith("nick ")){const newNick=cmd.slice(5).trim(); if(!newNick) return null; const oldUser=currentUser; currentUser=newNick; return {author:"SYSTEM", text:`Nick alterado de ${oldUser} para ${currentUser}`, type:null};}
-  return null;
-}
-
-input.addEventListener("keydown", async (e)=>{
-  if(e.key!=="Enter" || !input.value.trim()) return;
-  const raw=input.value.trim();
-  const command=handleCommand(raw);
-  await addDoc(collection(db,"messages"),{
-    author: command?command.author:currentUser,
-    text: command?command.text:raw,
-    type: command?.type||null,
-    createdAt: serverTimestamp()
-  });
-  input.value="";
-});
-
-/* FINDER / ARQUIVOS */
-const fileSystem={
-  "arquivos.amanecer":{"relatorio-amanecer":"docs/H40N/arq-amanecer_relatorio.html","experimento-amanecer":"docs/H40N/arq-amanecer_experimento.html"},
-  "arquivos.kitsune":{"relatorio-yokai":"docs/H40N/arq-kitsune_relatorio.html"},
-  "arquivos.operador":{"operador-h40n":"docs/H40N/arq-noah_operador.html","thoughts-h40n":"docs/H40N/arq-noah_thoughts.html"}
+/* FINDER */
+const fileSystem = {
+  "arquivos.amanecer":{
+    "relatorio-amanecer":"docs/H40N/arq-amanecer_relatorio.html",
+    "experimento-amanecer":"docs/H40N/arq-amanecer_experimento.html"
+  },
+  "arquivos.kitsune":{
+    "relatorio-yokai":"docs/H40N/arq-kitsune_relatorio.html"
+  },
+  "arquivos.operador":{
+    "operador-h40n":"docs/H40N/arq-noah_operador.html",
+    "thoughts-h40n":"docs/H40N/arq-noah_thoughts.html"
+  }
 };
 
 function updateFinder(){
-  const holder=document.getElementById("file-list"); holder.innerHTML="";
+  const holder=document.getElementById("file-list");
+  holder.innerHTML="";
   Object.keys(fileSystem).forEach(folder=>{
     const div=document.createElement("div");
-    div.className="file-item"; div.innerHTML=`<div class="file-label">${folder}/</div>`;
+    div.className="file-item";
+    div.innerHTML=`<div class="file-label">${folder}/</div>`;
     div.onclick=()=>openFolder(folder);
     holder.appendChild(div);
   });
 }
 
 function openFolder(folder){
-  const holder=document.getElementById("file-list"); holder.innerHTML="";
-  const back=document.createElement("div"); back.textContent="← Voltar"; back.style.cursor="pointer"; back.onclick=updateFinder; holder.appendChild(back);
+  const holder=document.getElementById("file-list");
+  holder.innerHTML="";
+  const back=document.createElement("div");
+  back.textContent="← Voltar";
+  back.style.cursor="pointer";
+  back.onclick=updateFinder;
+  holder.appendChild(back);
+
   Object.entries(fileSystem[folder]).forEach(([file,path])=>{
-    const div=document.createElement("div"); div.className="file-item"; div.innerHTML=`<div class="file-label">${file}</div>`;
-    div.onclick=()=>openFile(path); holder.appendChild(div);
+    const div=document.createElement("div");
+    div.className="file-item";
+    div.innerHTML=`<div class="file-label">${file}</div>`;
+    div.onclick=()=>openFile(path);
+    holder.appendChild(div);
   });
 }
 
@@ -267,15 +259,77 @@ function openFile(path){
 function closeViewer(){
   document.getElementById("viewerOverlay").style.display="none";
   document.getElementById("viewerFrame").src="";
-  document.getElementById("output").scrollTop = document.getElementById("output").scrollHeight;
 }
 
-// botão vermelho funcional
 document.getElementById("closeOverlayBtn").addEventListener("click", closeViewer);
+window.addEventListener("DOMContentLoaded", updateFinder);
 
-window.addEventListener("DOMContentLoaded", ()=>{ updateFinder(); });
+/* UPLOAD */
+function simulateUpload(){
+  function addLine(text){
+    const line=document.createElement("div");
+    line.className="line user-SYSTEM";
+    line.textContent="SYSTEM> "+text;
+    output.appendChild(line);
+    output.scrollTop=output.scrollHeight;
+  }
+
+  addLine("Dispositivo USB detectado...");
+}
+
+/* COMANDOS */
+function handleCommand(raw){
+  const cmd=raw.trim().toLowerCase();
+
+  if(cmd==="login noah"){ currentUser="NOAH"; return {author:"NOAH",text:"",type:"LOGIN"}; }
+  if(cmd==="login echo"||cmd==="login ech0"){ currentUser="ECH0"; return {author:"ECH0",text:"",type:"LOGIN"}; }
+
+  if(cmd==="login systema"){
+    currentUser="SYSTEMA";
+    return { block:true }; // impede qualquer registro
+  }
+
+  if(cmd==="logout"){
+    const old=currentUser;
+    currentUser="INTRUSO";
+    return {author:old,text:"Operador desconectado",type:"LOGOUT"};
+  }
+
+  if(cmd==="clear"){ return {author:"SYSTEM",text:"",type:"CLEAR"}; }
+
+  if(cmd==="upload"){
+    if(currentUser!=="ECH0"){
+      return {author:"SYSTEM",text:"Permissão negada.",type:null};
+    }
+    simulateUpload();
+    return {block:true};
+  }
+
+  return null;
+}
+
+/* INPUT */
+input.addEventListener("keydown", async (e)=>{
+  if(e.key!=="Enter"||!input.value.trim()) return;
+
+  const raw=input.value.trim();
+  const command=handleCommand(raw);
+
+  if(command?.block){
+    input.value="";
+    return;
+  }
+
+  await addDoc(collection(db,"messages"),{
+    author:command?command.author:currentUser,
+    text:command?command.text:raw,
+    type:command?.type||null,
+    createdAt:serverTimestamp()
+  });
+
+  input.value="";
+});
 </script>
-
 </div>
 </body>
 </html>
