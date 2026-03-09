@@ -1,212 +1,484 @@
 <!DOCTYPE html>
 <html lang="pt-PT">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>H40N - N.ROOT | TERMINAL V9.5 CHAT</title>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>H40N - N.ROOT | TERMINAL V10</title>
 
 <style>
-body {
-    background:#0a0a0a;
-    margin:0;
-    padding:0;
-    font-family:monospace;
-    color:#e5e5e5;
+
+body{
+background:#0a0a0a;
+margin:0;
+font-family:monospace;
+color:#e5e5e5;
 }
 
-.terminal-wrapper {
-    width:90%;
-    max-width:1200px;
-    margin:40px auto;
-    border:1px solid #333;
-    border-radius:8px;
-    overflow:hidden;
-    background:#111;
-    box-shadow:0px 0px 20px rgba(0,0,0,0.6);
-    position:relative;
+/* ACCESS GATE */
+
+#accessGate{
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:#0a0a0a;
+display:flex;
+align-items:center;
+justify-content:center;
+z-index:9999;
 }
 
-.terminal-header {
-    background:#1a1a1a;
-    padding:10px;
-    border-bottom:1px solid #333;
-    display:flex;
-    align-items:center;
-    gap:10px;
-    position:relative;
+.gate-box{
+background:#111;
+border:1px solid #333;
+padding:30px;
+border-radius:8px;
+width:260px;
+text-align:center;
 }
 
-.dot { width:12px; height:12px; border-radius:50%; }
-.dot.red { background:#ff5f56; cursor:pointer; }
-.dot.yellow { background:#ffbd2e; }
-.dot.green { background:#27c93f; }
-
-.terminal-title { flex:1; text-align:center; opacity:0.7; }
-
-.presence {
-    position:absolute;
-    right:10px;
-    top:50%;
-    transform:translateY(-50%);
-    font-size:12px;
-    letter-spacing:1px;
-    padding:3px 8px;
-    border-radius:999px;
-    border:1px solid;
-    opacity:0.9;
-}
-.presence.offline{ color:#ff4d4d; border-color:#ff4d4d; }
-.presence.noah{ color:#3ee9e9; border-color:#3ee9e9; }
-.presence.ech0{ color:#ffa200; border-color:#ffa200; }
-.presence.both{ color:#b388ff; border-color:#b388ff; }
-
-#main-grid { display:flex; height:80vh; }
-#left-terminal { width:50%; display:flex; flex-direction:column; border-right:1px solid #333; }
-#output { flex:1; overflow-y:auto; padding:15px; line-height:1.45em; white-space:pre-wrap; }
-.line{ margin:6px 0; }
-.user-INTRUSO{ color:#9aa4ac; }
-.user-NOAH{ color:#3ee9e9; }
-.user-ECH0{ color:#ffa200; }
-.user-SYSTEM{ color:#ff4d4d; }
-.user-SYSTEMA{ color:#ff2e88; }
-
-.terminal-input-area { display:flex; gap:10px; padding:12px; background:#1a1a1a; border-top:1px solid #333; }
-#prompt{ color:#00e676; font-weight:bold; }
-#chatInput { flex:1; background:transparent; border:1px solid #333; color:#e5e5e5; padding:8px; font-family:monospace; }
-
-#finder { width:50%; background:#111; display:flex; flex-direction:column; overflow-y:auto; }
-#finder-header { padding:12px; border-bottom:1px solid #333; color:#c1c1c1; font-size:13px; letter-spacing:1px; }
-#file-list { padding:10px; display:flex; flex-direction:column; gap:18px; }
-.file-item { display:flex; align-items:center; gap:12px; padding:8px; cursor:pointer; border-radius:6px; transition:0.15s; background:#161616; border:1px solid #222; }
-.file-item:hover { background:#222; }
-.file-label { font-size:13px; color:#e5e5e5; letter-spacing:0.5px; }
-
-#viewerOverlay {
-    display:none;
-    position:absolute;
-    top:0; left:0;
-    width:100%; height:100%;
-    z-index:999;
-    background: rgba(0,0,0,0.75);
-    backdrop-filter: blur(3px);
+.gate-title{
+margin-bottom:15px;
+opacity:.7;
+letter-spacing:1px;
 }
 
-#viewerOverlay .overlay-terminal {
-    width:90%;
-    height:85%;
-    margin:40px auto;
-    background:#111;
-    border:1px solid #333;
-    border-radius:8px;
-    display:flex;
-    flex-direction:column;
-    overflow:hidden;
+.gate-btn{
+width:100%;
+margin-bottom:8px;
+padding:8px;
+background:#161616;
+border:1px solid #333;
+color:#fff;
+cursor:pointer;
+font-family:monospace;
 }
 
-#viewerOverlay iframe {
-    flex:1;
-    border:none;
-    background:#0a0a0a;
+.gate-btn:hover{
+background:#222;
 }
+
+.gate-input{
+width:100%;
+margin-top:10px;
+padding:8px;
+background:#000;
+border:1px solid #333;
+color:#fff;
+font-family:monospace;
+}
+
+/* TERMINAL */
+
+.terminal-wrapper{
+width:90%;
+max-width:1200px;
+margin:40px auto;
+border:1px solid #333;
+border-radius:8px;
+overflow:hidden;
+background:#111;
+box-shadow:0 0 20px rgba(0,0,0,.6);
+position:relative;
+}
+
+.terminal-header{
+background:#1a1a1a;
+padding:10px;
+border-bottom:1px solid #333;
+display:flex;
+align-items:center;
+gap:10px;
+position:relative;
+}
+
+.dot{width:12px;height:12px;border-radius:50%;}
+.red{background:#ff5f56;}
+.yellow{background:#ffbd2e;}
+.green{background:#27c93f;}
+
+.terminal-title{flex:1;text-align:center;opacity:.7;}
+
+.presence{
+position:absolute;
+right:10px;
+top:50%;
+transform:translateY(-50%);
+font-size:12px;
+padding:3px 8px;
+border-radius:999px;
+border:1px solid;
+}
+
+.presence.offline{color:#ff4d4d;border-color:#ff4d4d;}
+.presence.noah{color:#3ee9e9;border-color:#3ee9e9;}
+.presence.ech0{color:#ffa200;border-color:#ffa200;}
+.presence.both{color:#b388ff;border-color:#b388ff;}
+
+#main-grid{display:flex;height:80vh;}
+
+#left-terminal{
+width:50%;
+display:flex;
+flex-direction:column;
+border-right:1px solid #333;
+}
+
+#output{
+flex:1;
+overflow-y:auto;
+padding:15px;
+white-space:pre-wrap;
+}
+
+.line{margin:6px 0;}
+
+.user-NOAH{color:#3ee9e9;}
+.user-ECH0{color:#ffa200;}
+.user-SYSTEM{color:#ff4d4d;}
+.user-SYSTEMA{color:#ff2e88;}
+
+.terminal-input-area{
+display:flex;
+gap:10px;
+padding:12px;
+background:#1a1a1a;
+border-top:1px solid #333;
+}
+
+#prompt{color:#00e676;font-weight:bold;}
+
+#chatInput{
+flex:1;
+background:transparent;
+border:1px solid #333;
+color:#e5e5e5;
+padding:8px;
+font-family:monospace;
+}
+
+/* FINDER */
+
+#finder{
+width:50%;
+background:#111;
+display:flex;
+flex-direction:column;
+}
+
+#finder-header{
+padding:12px;
+border-bottom:1px solid #333;
+color:#c1c1c1;
+font-size:13px;
+}
+
+#file-list{
+padding:10px;
+display:flex;
+flex-direction:column;
+gap:18px;
+}
+
+.file-item{
+display:flex;
+align-items:center;
+padding:8px;
+cursor:pointer;
+border-radius:6px;
+background:#161616;
+border:1px solid #222;
+}
+
+.file-label{
+font-size:13px;
+color:#e5e5e5;
+letter-spacing:0.5px;
+}
+
+.file-item:hover{background:#222;}
+
+#viewerOverlay{
+display:none;
+position:absolute;
+top:0;
+left:0;
+width:100%;
+height:100%;
+z-index:999;
+background:rgba(0,0,0,.75);
+}
+
+.overlay-terminal{
+width:90%;
+height:85%;
+margin:40px auto;
+background:#111;
+border:1px solid #333;
+border-radius:8px;
+display:flex;
+flex-direction:column;
+}
+
+#viewerFrame{
+flex:1;
+border:none;
+}
+
 </style>
 </head>
 
 <body>
 
+<!-- ACCESS SCREEN -->
+
+<div id="accessGate">
+
+<div class="gate-box">
+
+<div class="gate-title">SELECIONE IDENTIDADE</div>
+
+<button class="gate-btn" data-role="NOAH">NOAH</button>
+<button class="gate-btn" data-role="ECH0">ECH0</button>
+<button class="gate-btn" data-role="SYSTEMA">SYSTEMA</button>
+<button class="gate-btn" data-role="INTRUSO">INTRUSO</button>
+
+<div id="gateFields"></div>
+
+</div>
+</div>
+
+<!-- TERMINAL -->
+
 <div class="terminal-wrapper">
 
 <div class="terminal-header">
-    <div class="dot red"></div>
-    <div class="dot yellow"></div>
-    <div class="dot green"></div>
-    <div class="terminal-title">H40N - N.ROOT | TERMINAL V9.5 CHAT</div>
-    <span id="presenceIndicator" class="presence offline">OPERADORES OFF</span>
+<div class="dot red"></div>
+<div class="dot yellow"></div>
+<div class="dot green"></div>
+<div class="terminal-title">H40N - N.ROOT</div>
+<span id="presenceIndicator" class="presence offline">OPERADORES OFF</span>
 </div>
 
 <div id="main-grid">
-    <div id="left-terminal">
-        <div id="output"></div>
-        <div class="terminal-input-area">
-            <div id="prompt">&gt;</div>
-            <input id="chatInput" placeholder="Digite algo..." />
-        </div>
-    </div>
 
-    <div id="finder">
-        <div id="finder-header">Arquivos</div>
-        <div id="file-list"></div>
-    </div>
+<div id="left-terminal">
+
+<div id="output"></div>
+
+<div class="terminal-input-area">
+<div id="prompt">&gt;</div>
+<input id="chatInput" placeholder="Digite algo..."/>
+</div>
+
+</div>
+
+<div id="finder">
+<div id="finder-header">Arquivos</div>
+<div id="file-list"></div>
+</div>
+
 </div>
 
 <div id="viewerOverlay">
-    <div class="overlay-terminal">
-        <div class="terminal-header">
-            <div class="dot red" id="closeOverlayBtn"></div>
-            <div class="dot yellow"></div>
-            <div class="dot green"></div>
-            <div class="terminal-title">VISUALIZADOR</div>
-        </div>
-        <iframe id="viewerFrame"></iframe>
-    </div>
+<div class="overlay-terminal">
+
+<div class="terminal-header">
+<div class="dot red" id="closeOverlayBtn"></div>
+<div class="dot yellow"></div>
+<div class="dot green"></div>
+<div class="terminal-title">VISUALIZADOR</div>
+</div>
+
+<iframe id="viewerFrame"></iframe>
+
+</div>
 </div>
 
 <script type="module">
+
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getFirestore,collection,addDoc,query,orderBy,onSnapshot,serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 /* FIREBASE */
-const firebaseConfig = {
-  apiKey: "AIzaSyAiSfe0sF-N4qCPjtxSe6vDD-xK878PSIg",
-  authDomain: "ech0-chat-3d1f4.firebaseapp.com",
-  projectId: "ech0-chat-3d1f4",
-  storageBucket: "ech0-chat-3d1f4.firebasestorage.app",
-  messagingSenderId: "307385370017",
-  appId: "1:307385370017:web:adc1b52765f34bf94177e0"
+
+const firebaseConfig={
+apiKey:"AIzaSy...",
+authDomain:"ech0-chat-3d1f4.firebaseapp.com",
+projectId:"ech0-chat-3d1f4",
+appId:"1:307385370017:web:adc1b52765f34bf94177e0"
 };
 
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+const app=initializeApp(firebaseConfig);
+const db=getFirestore(app);
+
+/* ACCESS */
+
+const PASS_NOAH="noah33";
+const PASS_ECH0="echo33";
+const PASS_SYSTEMA="root33";
+const PASS_INTRUDER="ninja33s";
+
+let currentUser=null;
+
+let selectedRole=null;
+
+const gate=document.getElementById("accessGate");
+const gateFields=document.getElementById("gateFields");
+
+document.querySelectorAll(".gate-btn").forEach(btn=>{
+btn.onclick=()=>{
+selectedRole=btn.dataset.role;
+renderFields();
+};
+});
+
+function renderFields(){
+
+gateFields.innerHTML="";
+
+if(selectedRole==="INTRUSO"){
+
+gateFields.innerHTML=`
+<input id="nickInput" class="gate-input" placeholder="nickname">
+<input id="passInput" class="gate-input" type="password" placeholder="senha">
+<button class="gate-btn" id="enterGate">ENTRAR</button>
+`;
+
+}else{
+
+gateFields.innerHTML=`
+<input id="passInput" class="gate-input" type="password" placeholder="senha">
+<button class="gate-btn" id="enterGate">ENTRAR</button>
+`;
+
+}
+
+document.getElementById("enterGate").onclick=validateAccess;
+
+}
+
+async function validateAccess(){
+
+const pass=document.getElementById("passInput").value;
+
+if(selectedRole==="NOAH" && pass!==PASS_NOAH) return alert("Senha inválida");
+if(selectedRole==="ECH0" && pass!==PASS_ECH0) return alert("Senha inválida");
+if(selectedRole==="INTRUSO" && pass!==PASS_INTRUDER) return alert("Senha inválida");
+if(selectedRole==="SYSTEMA" && pass!==PASS_SYSTEMA) return alert("Senha inválida");
+
+if(selectedRole==="INTRUSO"){
+
+const nick=document.getElementById("nickInput").value.trim();
+if(!nick) return alert("Escolha um nickname");
+
+currentUser=nick;
+
+}else{
+
+currentUser=selectedRole;
+
+}
+
+if(currentUser==="NOAH" || currentUser==="ECH0"){
+
+await addDoc(collection(db,"messages"),{
+author:currentUser,
+type:"LOGIN",
+createdAt:serverTimestamp()
+});
+
+}
+
+gate.style.display="none";
+
+}
 
 /* ELEMENTOS */
-const output = document.getElementById("output");
-const input = document.getElementById("chatInput");
-const presenceIndicator = document.getElementById("presenceIndicator");
 
-let currentUser = "INTRUSO";
-let operatorsOnline = { NOAH:false, ECH0:false };
+const output=document.getElementById("output");
+const input=document.getElementById("chatInput");
+const presenceIndicator=document.getElementById("presenceIndicator");
 
-/* PRESENÇA */
+let operatorsOnline={NOAH:false,ECH0:false};
+
+/* PRESENCE */
+
 function updatePresenceUI(){
-  presenceIndicator.className="presence";
-  if (operatorsOnline.NOAH && operatorsOnline.ECH0){ presenceIndicator.textContent="NOAH + ECH0"; presenceIndicator.classList.add("both"); return; }
-  if (operatorsOnline.NOAH){ presenceIndicator.textContent="NOAH ONLINE"; presenceIndicator.classList.add("noah"); return; }
-  if (operatorsOnline.ECH0){ presenceIndicator.textContent="ECH0 ONLINE"; presenceIndicator.classList.add("ech0"); return; }
-  presenceIndicator.textContent="OPERADORES OFF";
-  presenceIndicator.classList.add("offline");
+
+presenceIndicator.className="presence";
+
+if(operatorsOnline.NOAH && operatorsOnline.ECH0){
+presenceIndicator.textContent="NOAH + ECH0";
+presenceIndicator.classList.add("both");
+return;
 }
-updatePresenceUI();
+
+if(operatorsOnline.NOAH){
+presenceIndicator.textContent="NOAH ONLINE";
+presenceIndicator.classList.add("noah");
+return;
+}
+
+if(operatorsOnline.ECH0){
+presenceIndicator.textContent="ECH0 ONLINE";
+presenceIndicator.classList.add("ech0");
+return;
+}
+
+presenceIndicator.textContent="OPERADORES OFF";
+presenceIndicator.classList.add("offline");
+
+}
 
 /* CHAT */
-const q = query(collection(db, "messages"), orderBy("createdAt"));
-onSnapshot(q, (snapshot)=>{
-  snapshot.docChanges().forEach(change=>{
-    if(change.type!=="added") return;
-    const data=change.doc.data();
 
-    if(data.type==="LOGIN"){ operatorsOnline[data.author]=true; updatePresenceUI(); return; }
-    if(data.type==="LOGOUT"){ operatorsOnline[data.author]=false; updatePresenceUI(); return; }
-    if(data.type==="CLEAR"){ output.innerHTML=""; return; }
-    if(!data.text) return;
+const q=query(collection(db,"messages"),orderBy("createdAt"));
 
-    const line=document.createElement("div");
-    line.className="line user-"+data.author;
-    line.textContent=data.author+"> "+data.text;
-    output.appendChild(line);
-    output.scrollTop=output.scrollHeight;
-  });
+onSnapshot(q,(snapshot)=>{
+
+snapshot.docChanges().forEach(change=>{
+
+if(change.type!=="added") return;
+
+const data=change.doc.data();
+
+if(data.type==="LOGIN"){
+operatorsOnline[data.author]=true;
+updatePresenceUI();
+return;
+}
+
+if(data.type==="LOGOUT"){
+operatorsOnline[data.author]=false;
+updatePresenceUI();
+return;
+}
+
+if(data.type==="CLEAR"){
+output.innerHTML="";
+return;
+}
+
+if(!data.text) return;
+
+const line=document.createElement("div");
+
+line.className="line user-"+data.author;
+
+line.textContent=data.author+"> "+data.text;
+
+output.appendChild(line);
+
+output.scrollTop=output.scrollHeight;
+
+});
+
 });
 
 /* FINDER */
+
 const fileSystem = {
   "arquivos.amanecer":{
     "relatorio-amanecer":"docs/H40N/arq-amanecer_relatorio.html",
@@ -222,114 +494,135 @@ const fileSystem = {
 };
 
 function updateFinder(){
-  const holder=document.getElementById("file-list");
-  holder.innerHTML="";
+
+  const holder = document.getElementById("file-list");
+  holder.innerHTML = "";
+
   Object.keys(fileSystem).forEach(folder=>{
-    const div=document.createElement("div");
-    div.className="file-item";
-    div.innerHTML=`<div class="file-label">${folder}/</div>`;
-    div.onclick=()=>openFolder(folder);
+
+    const div = document.createElement("div");
+    div.className = "file-item";
+    div.innerHTML = `<div class="file-label">${folder}/</div>`;
+    div.onclick = ()=>openFolder(folder);
+
     holder.appendChild(div);
+
   });
+
 }
 
 function openFolder(folder){
-  const holder=document.getElementById("file-list");
-  holder.innerHTML="";
-  const back=document.createElement("div");
-  back.textContent="← Voltar";
-  back.style.cursor="pointer";
-  back.onclick=updateFinder;
+
+  const holder = document.getElementById("file-list");
+  holder.innerHTML = "";
+
+  const back = document.createElement("div");
+  back.textContent = "← Voltar";
+  back.style.cursor = "pointer";
+  back.onclick = updateFinder;
+
   holder.appendChild(back);
 
   Object.entries(fileSystem[folder]).forEach(([file,path])=>{
-    const div=document.createElement("div");
-    div.className="file-item";
-    div.innerHTML=`<div class="file-label">${file}</div>`;
-    div.onclick=()=>openFile(path);
+
+    const div = document.createElement("div");
+    div.className = "file-item";
+    div.innerHTML = `<div class="file-label">${file}</div>`;
+    div.onclick = ()=>openFile(path);
+
     holder.appendChild(div);
+
   });
+
 }
 
 function openFile(path){
-  document.getElementById("viewerFrame").src=path;
-  document.getElementById("viewerOverlay").style.display="block";
+
+  document.getElementById("viewerFrame").src = path;
+  document.getElementById("viewerOverlay").style.display = "block";
+
 }
 
 function closeViewer(){
-  document.getElementById("viewerOverlay").style.display="none";
-  document.getElementById("viewerFrame").src="";
+
+  document.getElementById("viewerOverlay").style.display = "none";
+  document.getElementById("viewerFrame").src = "";
+
 }
 
 document.getElementById("closeOverlayBtn").addEventListener("click", closeViewer);
 window.addEventListener("DOMContentLoaded", updateFinder);
 
-/* UPLOAD */
-function simulateUpload(){
-  function addLine(text){
-    const line=document.createElement("div");
-    line.className="line user-SYSTEM";
-    line.textContent="SYSTEM> "+text;
-    output.appendChild(line);
-    output.scrollTop=output.scrollHeight;
-  }
-
-  addLine("Dispositivo USB detectado...");
-}
-
-/* COMANDOS */
-function handleCommand(raw){
-  const cmd=raw.trim().toLowerCase();
-
-  if(cmd==="login noah"){ currentUser="NOAH"; return {author:"NOAH",text:"",type:"LOGIN"}; }
-  if(cmd==="login echo"||cmd==="login ech0"){ currentUser="ECH0"; return {author:"ECH0",text:"",type:"LOGIN"}; }
-
-  if(cmd==="login systema"){
-    currentUser="SYSTEMA";
-    return { block:true }; // impede qualquer registro
-  }
-
-  if(cmd==="logout"){
-    const old=currentUser;
-    currentUser="INTRUSO";
-    return {author:old,text:"Operador desconectado",type:"LOGOUT"};
-  }
-
-  if(cmd==="clear"){ return {author:"SYSTEM",text:"",type:"CLEAR"}; }
-
-  if(cmd==="upload"){
-    if(currentUser!=="ECH0"){
-      return {author:"SYSTEM",text:"Permissão negada.",type:null};
-    }
-    simulateUpload();
-    return {block:true};
-  }
-
-  return null;
-}
-
 /* INPUT */
-input.addEventListener("keydown", async (e)=>{
-  if(e.key!=="Enter"||!input.value.trim()) return;
 
-  const raw=input.value.trim();
-  const command=handleCommand(raw);
+input.addEventListener("keydown",async e=>{
 
-  if(command?.block){
-    input.value="";
-    return;
-  }
+if(e.key!=="Enter"||!input.value.trim()) return;
 
-  await addDoc(collection(db,"messages"),{
-    author:command?command.author:currentUser,
-    text:command?command.text:raw,
-    type:command?.type||null,
-    createdAt:serverTimestamp()
-  });
+const raw=input.value.trim();
 
-  input.value="";
+/* CLEAR */
+
+if(raw==="/clear"){
+
+if(currentUser!=="SYSTEMA"){
+alert("Comando restrito ao SYSTEMA");
+input.value="";
+return;
+}
+
+await addDoc(collection(db,"messages"),{
+author:"SYSTEM",
+type:"CLEAR",
+createdAt:serverTimestamp()
 });
+
+input.value="";
+return;
+
+}
+
+/* LOGOUT */
+
+if(raw==="/logout"){
+
+/* se for operador atualizar presence */
+
+if(currentUser==="NOAH" || currentUser==="ECH0"){
+
+await addDoc(collection(db,"messages"),{
+author:currentUser,
+type:"LOGOUT",
+createdAt:serverTimestamp()
+});
+
+}
+
+/* voltar tela inicial */
+
+gate.style.display="flex";
+
+currentUser=null;
+
+input.value="";
+return;
+
+}
+
+/* mensagem normal */
+
+await addDoc(collection(db,"messages"),{
+author:currentUser,
+text:raw,
+createdAt:serverTimestamp()
+});
+
+input.value="";
+
+});
+
+
 </script>
-</div>
+
 </body>
 </html>
