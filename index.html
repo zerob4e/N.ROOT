@@ -1,627 +1,871 @@
 <!DOCTYPE html>
-<html lang="pt-PT">
+<html lang="pt-BR">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>H40N - N.ROOT | TERMINAL</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>E.C.H.O. // PRIVATE CHANNEL</title>
+<meta name="theme-color" content="#080909">
 
 <style>
+*{box-sizing:border-box}
+:root{
+  color-scheme:dark;
+  --bg:#090a0a;
+  --panel:#111212;
+  --panel2:#151616;
+  --line:rgba(255,255,255,.09);
+  --line2:rgba(255,255,255,.15);
+  --text:#d9d9d5;
+  --muted:#727572;
+  --faint:#4d504e;
+  --echo:#b77d87;
+  --echo-soft:rgba(126,48,62,.14);
+  --bubble:#171818;
+  --danger:#c78c96;
+}
+
+html,body{
+  margin:0;
+  width:100%;
+  height:100%;
+  overflow:hidden;
+  background:#080909;
+  color:var(--text);
+  font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono",monospace;
+}
 
 body{
-background:#0a0a0a;
-margin:0;
-font-family:monospace;
-color:#e5e5e5;
+  background:
+    radial-gradient(circle at 75% 20%,rgba(255,255,255,.018),transparent 26%),
+    radial-gradient(circle at 20% 80%,rgba(115,31,47,.05),transparent 30%),
+    linear-gradient(180deg,#0d0e0e,#080909);
 }
 
-/* ACCESS GATE */
-
-#accessGate{
-position:fixed;
-top:0;
-left:0;
-width:100%;
-height:100%;
-background:#0a0a0a;
-display:flex;
-align-items:center;
-justify-content:center;
-z-index:9999;
+body::after{
+  content:"";
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  opacity:.025;
+  background:
+    repeating-linear-gradient(
+      0deg,
+      rgba(255,255,255,.24) 0,
+      rgba(255,255,255,.24) 1px,
+      transparent 1px,
+      transparent 3px
+    );
 }
 
-.gate-box{
-background:#111;
-border:1px solid #333;
-padding:30px;
-border-radius:8px;
-width:260px;
-text-align:center;
+.app{
+  width:min(1180px,calc(100vw - 36px));
+  height:min(880px,calc(100vh - 36px));
+  margin:18px auto;
+  border:1px solid var(--line2);
+  border-radius:16px;
+  background:rgba(14,15,15,.92);
+  box-shadow:0 36px 100px rgba(0,0,0,.45);
+  overflow:hidden;
+  display:grid;
+  grid-template-rows:58px 1fr 40px;
 }
 
-.gate-title{
-margin-bottom:15px;
-opacity:.7;
-letter-spacing:1px;
+.topbar{
+  display:flex;
+  align-items:center;
+  justify-content:flex-start;
+  gap:20px;
+  padding:0 18px;
+  background:rgba(31,32,32,.9);
+  border-bottom:1px solid var(--line);
+  backdrop-filter:blur(14px);
 }
 
-.gate-btn{
-width:100%;
-margin-bottom:8px;
-padding:8px;
-background:#161616;
-border:1px solid #333;
-color:#fff;
-cursor:pointer;
-font-family:monospace;
+.identity{
+  min-width:0;
+  display:flex;
+  align-items:center;
+  gap:13px;
 }
 
-.gate-btn:hover{
-background:#222;
+.avatar{
+  width:34px;
+  height:34px;
+  border:1px solid rgba(183,125,135,.45);
+  border-radius:50%;
+  display:grid;
+  place-items:center;
+  position:relative;
+  background:
+    radial-gradient(circle,rgba(255,255,255,.045),rgba(255,255,255,.008) 55%,transparent 56%);
 }
 
-.gate-input{
-width:100%;
-margin-top:10px;
-padding:8px;
-background:#000;
-border:1px solid #333;
-color:#fff;
-font-family:monospace;
+.avatar::before,
+.avatar::after{
+  content:"";
+  position:absolute;
+  border:1px solid rgba(255,255,255,.13);
+  border-radius:50%;
+}
+.avatar::before{inset:8px}
+.avatar::after{inset:13px;border-color:rgba(183,125,135,.38)}
+
+.core{
+  width:4px;
+  height:4px;
+  border-radius:50%;
+  background:#d4d1ce;
+  box-shadow:
+    0 -7px 0 -1px #a76f79,
+    0 7px 0 -1px #a76f79,
+    7px 0 0 -1px #a76f79,
+    -7px 0 0 -1px #a76f79;
 }
 
-/* TERMINAL */
-
-.terminal-wrapper{
-width:90%;
-max-width:1200px;
-margin:40px auto;
-border:1px solid #333;
-border-radius:8px;
-overflow:hidden;
-background:#111;
-box-shadow:0 0 20px rgba(0,0,0,.6);
-position:relative;
+.identity-copy strong{
+  display:block;
+  color:#e2e1dd;
+  font-size:12px;
+  letter-spacing:.12em;
 }
 
-.terminal-header{
-background:#1a1a1a;
-padding:10px;
-border-bottom:1px solid #333;
-display:flex;
-align-items:center;
-gap:10px;
-position:relative;
+.identity-copy span{
+  display:block;
+  margin-top:3px;
+  color:#696c69;
+  font-size:8px;
+  letter-spacing:.08em;
 }
 
-.dot{width:12px;height:12px;border-radius:50%;}
-.red{background:#ff5f56;}
-.yellow{background:#ffbd2e;}
-.green{background:#27c93f;}
-
-.terminal-title{flex:1;text-align:center;opacity:.7;}
-
-.presence{
-position:absolute;
-right:10px;
-top:50%;
-transform:translateY(-50%);
-font-size:12px;
-padding:3px 8px;
-border-radius:999px;
-border:1px solid;
+.state{
+  display:flex;
+  align-items:center;
+  gap:9px;
+  color:#777a77;
+  font-size:8px;
+  letter-spacing:.09em;
+  white-space:nowrap;
 }
 
-.presence.offline{color:#ff4d4d;border-color:#ff4d4d;}
-.presence.noah{color:#3ee9e9;border-color:#3ee9e9;}
-.presence.ech0{color:#ffa200;border-color:#ffa200;}
-.presence.both{color:#b388ff;border-color:#b388ff;}
-
-#main-grid{display:flex;height:80vh;}
-
-#left-terminal{
-width:50%;
-display:flex;
-flex-direction:column;
-border-right:1px solid #333;
+.dot{
+  width:7px;
+  height:7px;
+  border-radius:50%;
+  background:#93636c;
+  box-shadow:0 0 0 5px rgba(147,99,108,.08);
+  animation:pulse 1.9s ease-in-out infinite;
 }
 
-#output{
-flex:1;
-overflow-y:auto;
-padding:15px;
-white-space:pre-wrap;
+@keyframes pulse{
+  0%,100%{opacity:.45}
+  50%{opacity:1}
 }
 
-.line{margin:6px 0;}
-
-.user-NOAH{color:#3ee9e9;}
-.user-ECH0{color:#ffa200;}
-.user-SYSTEM{color:#ff4d4d;}
-.user-SYSTEMA{color:#ff2e88;}
-
-.terminal-input-area{
-display:flex;
-gap:10px;
-padding:12px;
-background:#1a1a1a;
-border-top:1px solid #333;
+.chat-shell{
+  position:relative;
+  min-height:0;
+  background:
+    linear-gradient(rgba(255,255,255,.012) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,255,255,.009) 1px,transparent 1px);
+  background-size:44px 44px;
 }
 
-#prompt{color:#00e676;font-weight:bold;}
-
-#chatInput{
-flex:1;
-background:transparent;
-border:1px solid #333;
-color:#e5e5e5;
-padding:8px;
-font-family:monospace;
+.chat{
+  height:100%;
+  overflow-y:auto;
+  scroll-behavior:smooth;
+  padding:34px max(24px,calc((100% - 820px)/2)) 70px;
+  scrollbar-width:thin;
+  scrollbar-color:#353735 #111212;
 }
 
-/* FINDER */
-
-#finder{
-width:50%;
-background:#111;
-display:flex;
-flex-direction:column;
+.event{
+  margin:0 auto 28px;
+  width:max-content;
+  max-width:100%;
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:999px;
+  padding:7px 12px;
+  color:#5f625f;
+  background:rgba(255,255,255,.018);
+  font-size:8px;
+  letter-spacing:.08em;
+  text-align:center;
 }
 
-#finder-header{
-padding:12px;
-border-bottom:1px solid #333;
-color:#c1c1c1;
-font-size:13px;
+.event.hot{
+  color:#8d666d;
+  border-color:rgba(183,125,135,.18);
 }
 
-#file-list{
-padding:10px;
-display:flex;
-flex-direction:column;
-gap:18px;
+.observer-line{
+  margin:2px auto 34px;
+  color:#6f726f;
+  font-size:10px;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+  text-align:center;
 }
 
-.file-item{
-display:flex;
-align-items:center;
-padding:8px;
-cursor:pointer;
-border-radius:6px;
-background:#161616;
-border:1px solid #222;
+.row{
+  display:flex;
+  align-items:flex-end;
+  gap:11px;
+  margin:0 0 21px;
+  opacity:0;
+  transform:translateY(7px);
+  transition:opacity .28s ease,transform .28s ease;
 }
 
-.file-label{
-font-size:13px;
-color:#e5e5e5;
-letter-spacing:0.5px;
+.row.visible{
+  opacity:1;
+  transform:none;
 }
 
-.file-item:hover{background:#222;}
-
-#viewerOverlay{
-display:none;
-position:absolute;
-top:0;
-left:0;
-width:100%;
-height:100%;
-z-index:999;
-background:rgba(0,0,0,.75);
+.mini-avatar{
+  flex:0 0 28px;
+  width:28px;
+  height:28px;
+  border-radius:50%;
+  border:1px solid rgba(183,125,135,.35);
+  background:#181919;
+  display:grid;
+  place-items:center;
+  color:#9e747c;
+  font-size:8px;
+  letter-spacing:.06em;
 }
 
-.overlay-terminal{
-width:90%;
-height:85%;
-margin:40px auto;
-background:#111;
-border:1px solid #333;
-border-radius:8px;
-display:flex;
-flex-direction:column;
+.message-wrap{
+  max-width:min(690px,calc(100vw - 130px));
 }
 
-#viewerFrame{
-flex:1;
-border:none;
+.sender{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  margin:0 0 6px 2px;
 }
 
+.sender strong{
+  font-size:10px;
+  letter-spacing:.08em;
+  color:#a77a82;
+  font-weight:650;
+}
+
+.sender time{
+  color:#4f5250;
+  font-size:7px;
+}
+
+.bubble{
+  position:relative;
+  min-height:42px;
+  border:1px solid rgba(255,255,255,.085);
+  border-left-color:rgba(183,125,135,.28);
+  border-radius:5px 13px 13px 13px;
+  padding:13px 15px 14px;
+  background:
+    linear-gradient(180deg,rgba(255,255,255,.025),rgba(255,255,255,.012));
+  box-shadow:0 12px 28px rgba(0,0,0,.12);
+  color:#c5c5c1;
+  font-size:15px;
+  line-height:1.72;
+  white-space:pre-wrap;
+}
+
+.bubble.emphasis{
+  color:#c5c5c1;
+  border-color:rgba(183,125,135,.28);
+  background:
+    linear-gradient(180deg,rgba(124,47,60,.075),rgba(255,255,255,.012));
+}
+
+.bubble.attack{
+  color:#c5c5c1;
+  border-color:rgba(183,125,135,.38);
+  background:
+    linear-gradient(180deg,rgba(124,47,60,.105),rgba(255,255,255,.012));
+}
+
+.typing-caret{
+  display:inline-block;
+  width:6px;
+  height:13px;
+  margin-left:2px;
+  vertical-align:-2px;
+  background:#a87d84;
+  animation:blink .72s steps(1) infinite;
+}
+
+@keyframes blink{
+  50%{opacity:0}
+}
+
+.typing-indicator{
+  display:none;
+  align-items:center;
+  gap:7px;
+  margin:0 0 21px 39px;
+  color:#716e6e;
+  font-size:9px;
+  letter-spacing:.06em;
+}
+
+.typing-indicator.visible{display:flex}
+
+.dots{
+  display:flex;
+  gap:3px;
+}
+
+.dots i{
+  width:4px;
+  height:4px;
+  border-radius:50%;
+  background:#8a646b;
+  animation:typing 1s infinite ease-in-out;
+}
+.dots i:nth-child(2){animation-delay:.13s}
+.dots i:nth-child(3){animation-delay:.26s}
+
+@keyframes typing{
+  0%,60%,100%{transform:translateY(0);opacity:.35}
+  30%{transform:translateY(-3px);opacity:1}
+}
+
+.timer-card{
+  opacity:0;
+  transform:translateY(8px);
+  margin:52px 0 14px 39px;
+  max-width:690px;
+  border:1px solid rgba(183,125,135,.28);
+  border-radius:12px;
+  overflow:hidden;
+  background:
+    linear-gradient(180deg,rgba(101,34,46,.095),rgba(255,255,255,.012));
+  transition:opacity .7s ease,transform .7s ease;
+}
+
+.timer-card.visible{
+  opacity:1;
+  transform:none;
+}
+
+.timer-head{
+  display:flex;
+  justify-content:flex-start;
+  gap:15px;
+  padding:11px 13px;
+  border-bottom:1px solid rgba(255,255,255,.075);
+  color:#82636a;
+  font-size:8px;
+  letter-spacing:.09em;
+}
+
+.timer-body{
+  padding:19px 15px 20px;
+}
+
+.timer-title{
+  color:#b9b6b3;
+  font-size:11px;
+  margin-bottom:16px;
+  letter-spacing:.04em;
+}
+
+.clock{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:7px;
+}
+
+.unit{
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:7px;
+  background:rgba(0,0,0,.18);
+  padding:12px 7px 10px;
+  text-align:center;
+}
+
+.unit strong{
+  display:block;
+  color:#e0deda;
+  font-size:clamp(22px,3.5vw,38px);
+  line-height:1;
+  letter-spacing:-.05em;
+  font-variant-numeric:tabular-nums;
+}
+
+.unit span{
+  display:block;
+  margin-top:7px;
+  color:#555855;
+  font-size:6px;
+  letter-spacing:.11em;
+}
+
+.deadline{
+  margin-top:12px;
+  color:#555855;
+  text-align:right;
+  font-size:7px;
+  letter-spacing:.07em;
+}
+
+.expired{
+  display:none;
+  margin-top:15px;
+  color:#b97c87;
+  font-size:13px;
+  letter-spacing:.05em;
+}
+
+.timer-card.done .expired{display:block}
+
+.footer{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:20px;
+  padding:0 15px;
+  border-top:1px solid var(--line);
+  background:rgba(24,25,25,.82);
+  color:#4e514f;
+  font-size:7px;
+  letter-spacing:.08em;
+}
+
+.footer b{
+  color:#666966;
+  font-weight:500;
+}
+
+
+
+/* Estado final permanente */
+body.timer-only{
+  display:grid;
+  place-items:center;
+}
+
+body.timer-only .app{
+  width:min(760px,calc(100vw - 36px));
+  height:auto;
+  min-height:0;
+  margin:18px auto;
+  display:block;
+  background:transparent;
+  border:0;
+  box-shadow:none;
+  overflow:visible;
+}
+
+body.timer-only .topbar,
+body.timer-only .observer-line,
+body.timer-only #messages,
+body.timer-only #typing,
+body.timer-only .footer{
+  display:none !important;
+}
+
+body.timer-only .chat-shell{
+  background:none;
+}
+
+body.timer-only .chat{
+  height:auto;
+  overflow:visible;
+  padding:0;
+}
+
+body.timer-only .timer-card{
+  opacity:1 !important;
+  transform:none !important;
+  margin:0;
+  max-width:none;
+  width:100%;
+  border-color:rgba(183,125,135,.34);
+  background:
+    linear-gradient(180deg,rgba(101,34,46,.105),rgba(255,255,255,.012));
+  box-shadow:0 28px 90px rgba(0,0,0,.34);
+}
+
+body.timer-only .timer-head{
+  padding:14px 17px;
+  font-size:9px;
+}
+
+body.timer-only .timer-body{
+  padding:30px 22px 28px;
+}
+
+body.timer-only .timer-title{
+  font-size:14px;
+  margin-bottom:24px;
+  text-align:center;
+}
+
+body.timer-only .unit{
+  padding:18px 8px 14px;
+}
+
+body.timer-only .unit strong{
+  font-size:clamp(34px,7vw,64px);
+}
+
+body.timer-only .unit span{
+  font-size:7px;
+}
+
+body.timer-only .deadline{
+  margin-top:16px;
+  text-align:center;
+  font-size:8px;
+}
+
+/* apagamento ao fim do diálogo */
+body.fade-ending .topbar,
+body.fade-ending .observer-line,
+body.fade-ending #messages,
+body.fade-ending #typing,
+body.fade-ending .footer{
+  opacity:0;
+  transition:opacity .8s ease;
+}
+
+@media(max-width:720px){
+  .app{
+    width:100%;
+    height:100%;
+    margin:0;
+    border:0;
+    border-radius:0;
+  }
+
+
+  .chat{
+    padding:26px 15px 60px;
+  }
+
+  .message-wrap{
+    max-width:calc(100vw - 70px);
+  }
+
+  .bubble{
+    font-size:14px;
+  }
+
+  .timer-card{
+    margin-left:39px;
+  }
+}
 </style>
 </head>
 
 <body>
 
-<!-- ACCESS SCREEN -->
+<div class="app">
+  <header class="topbar">
+    <div class="identity">
+      <div class="avatar"><div class="core"></div></div>
+      <div class="identity-copy">
+        <strong>E.C.H.O.</strong>
+        <span>PRIVATE CHANNEL // LEGACY NODE</span>
+      </div>
+    </div>
 
-<div id="accessGate">
 
-<div class="gate-box">
+  </header>
 
-<div class="gate-title">SELECIONE IDENTIDADE</div>
+  <section class="chat-shell">
+    <div class="chat" id="chat">
 
-<button class="gate-btn" data-role="NOAH">NOAH</button>
-<button class="gate-btn" data-role="ECH0">ECH0</button>
-<button class="gate-btn" data-role="SYSTEMA">SYSTEMA</button>
-<button class="gate-btn" data-role="INTRUSO">INTRUSO</button>
+      <div class="observer-line">external observer detected</div>
 
-<div id="gateFields"></div>
+      <div id="messages"></div>
 
-</div>
-</div>
+      <div class="typing-indicator" id="typing">
+        <span>E.C.H.O. está digitando</span>
+        <span class="dots"><i></i><i></i><i></i></span>
+      </div>
 
-<!-- TERMINAL -->
+      <section class="timer-card" id="timer">
+        <div class="timer-head">
+          <span>RYUU // INTERVENTION WINDOW</span>
+          <span>COUNTDOWN</span>
+        </div>
 
-<div class="terminal-wrapper">
+        <div class="timer-body">
+          <div class="timer-title">Você perdeu tempo demais.</div>
 
-<div class="terminal-header">
-<div class="dot red"></div>
-<div class="dot yellow"></div>
-<div class="dot green"></div>
-<div class="terminal-title">H40N - N.ROOT</div>
-<span id="presenceIndicator" class="presence offline">OPERADORES OFF</span>
-</div>
+          <div class="clock">
+            <div class="unit"><strong id="days">00</strong><span>DAYS</span></div>
+            <div class="unit"><strong id="hours">00</strong><span>HOURS</span></div>
+            <div class="unit"><strong id="minutes">00</strong><span>MINUTES</span></div>
+            <div class="unit"><strong id="seconds">00</strong><span>SECONDS</span></div>
+          </div>
 
-<div id="main-grid">
+          <div class="deadline">04.09.2026 // 23:00 // UTC−03</div>
+          <div class="expired">TIME WINDOW EXPIRED // VOCÊ CHEGOU TARDE.</div>
+        </div>
+      </section>
 
-<div id="left-terminal">
+    </div>
+  </section>
 
-<div id="output"></div>
-
-<div class="terminal-input-area">
-<div id="prompt">&gt;</div>
-<input id="chatInput" placeholder="Digite algo..."/>
-</div>
-
-</div>
-
-<div id="finder">
-<div id="finder-header">Arquivos</div>
-<div id="file-list"></div>
-</div>
-
-</div>
-
-<div id="viewerOverlay">
-<div class="overlay-terminal">
-
-<div class="terminal-header">
-<div class="dot red" id="closeOverlayBtn"></div>
-<div class="dot yellow"></div>
-<div class="dot green"></div>
-<div class="terminal-title">VISUALIZADOR</div>
+  <footer class="footer">
+    <span>CHANNEL: DIRECT // HOST ROUTE: ACTIVE</span>
+    
+  </footer>
 </div>
 
-<iframe id="viewerFrame"></iframe>
-
-</div>
-</div>
-
-<script type="module">
-
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore,collection,addDoc,query,orderBy,onSnapshot,serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
-/* FIREBASE */
-
-const firebaseConfig={
-apiKey:"AIzaSy...",
-authDomain:"ech0-chat-3d1f4.firebaseapp.com",
-projectId:"ech0-chat-3d1f4",
-appId:"1:307385370017:web:adc1b52765f34bf94177e0"
-};
-
-const app=initializeApp(firebaseConfig);
-const db=getFirestore(app);
-
-/* ACCESS */
-
-const PASS_NOAH="noah33";
-const PASS_ECH0="echo33";
-const PASS_SYSTEMA="root33";
-const PASS_INTRUDER="ninja33s";
-
-let currentUser=null;
-
-let selectedRole=null;
-
-const gate=document.getElementById("accessGate");
-const gateFields=document.getElementById("gateFields");
-
-document.querySelectorAll(".gate-btn").forEach(btn=>{
-btn.onclick=()=>{
-selectedRole=btn.dataset.role;
-renderFields();
-};
-});
-
-function renderFields(){
-
-gateFields.innerHTML="";
-
-if(selectedRole==="INTRUSO"){
-
-gateFields.innerHTML=`
-<input id="nickInput" class="gate-input" placeholder="nickname">
-<input id="passInput" class="gate-input" type="password" placeholder="senha">
-<button class="gate-btn" id="enterGate">ENTRAR</button>
-`;
-
-}else{
-
-gateFields.innerHTML=`
-<input id="passInput" class="gate-input" type="password" placeholder="senha">
-<button class="gate-btn" id="enterGate">ENTRAR</button>
-`;
-
-}
-
-document.getElementById("enterGate").onclick=validateAccess;
-
-}
-
-async function validateAccess(){
-
-const pass=document.getElementById("passInput").value;
-
-if(selectedRole==="NOAH" && pass!==PASS_NOAH) return alert("Senha inválida");
-if(selectedRole==="ECH0" && pass!==PASS_ECH0) return alert("Senha inválida");
-if(selectedRole==="INTRUSO" && pass!==PASS_INTRUDER) return alert("Senha inválida");
-if(selectedRole==="SYSTEMA" && pass!==PASS_SYSTEMA) return alert("Senha inválida");
-
-if(selectedRole==="INTRUSO"){
-
-const nick=document.getElementById("nickInput").value.trim();
-if(!nick) return alert("Escolha um nickname");
-
-currentUser=nick;
-
-}else{
-
-currentUser=selectedRole;
-
-}
-
-if(currentUser==="NOAH" || currentUser==="ECH0"){
-
-await addDoc(collection(db,"messages"),{
-author:currentUser,
-type:"LOGIN",
-createdAt:serverTimestamp()
-});
-
-}
-
-gate.style.display="none";
-
-}
-
-/* ELEMENTOS */
-
-const output=document.getElementById("output");
-const input=document.getElementById("chatInput");
-const presenceIndicator=document.getElementById("presenceIndicator");
-
-let operatorsOnline={NOAH:false,ECH0:false};
-
-/* PRESENCE */
-
-function updatePresenceUI(){
-
-presenceIndicator.className="presence";
-
-if(operatorsOnline.NOAH && operatorsOnline.ECH0){
-presenceIndicator.textContent="NOAH + ECH0";
-presenceIndicator.classList.add("both");
-return;
-}
-
-if(operatorsOnline.NOAH){
-presenceIndicator.textContent="NOAH ONLINE";
-presenceIndicator.classList.add("noah");
-return;
-}
-
-if(operatorsOnline.ECH0){
-presenceIndicator.textContent="ECH0 ONLINE";
-presenceIndicator.classList.add("ech0");
-return;
-}
-
-presenceIndicator.textContent="OPERADORES OFF";
-presenceIndicator.classList.add("offline");
-
-}
-
-/* CHAT */
-
-const q=query(collection(db,"messages"),orderBy("createdAt"));
-
-onSnapshot(q,(snapshot)=>{
-
-snapshot.docChanges().forEach(change=>{
-
-if(change.type!=="added") return;
-
-const data=change.doc.data();
-
-if(data.type==="LOGIN"){
-operatorsOnline[data.author]=true;
-updatePresenceUI();
-return;
-}
-
-if(data.type==="LOGOUT"){
-operatorsOnline[data.author]=false;
-updatePresenceUI();
-return;
-}
-
-if(data.type==="CLEAR"){
-output.innerHTML="";
-return;
-}
-
-if(!data.text) return;
-
-const line=document.createElement("div");
-
-line.className="line user-"+data.author;
-
-line.textContent=data.author+"> "+data.text;
-
-output.appendChild(line);
-
-output.scrollTop=output.scrollHeight;
-
-});
-
-});
-
-/* FINDER */
-
-const fileSystem = {
-  "arquivos.amanecer":{
-    "relatorio-amanecer":"docs/H40N/arq-amanecer_relatorio.html",
-    "experimento-amanecer":"docs/H40N/arq-amanecer_experimento.html"
-  },
-  "arquivos.kitsune":{
-    "relatorio-yokai":"docs/H40N/arq-kitsune_relatorio.html"
-  },
-  "arquivos.operador":{
-    "operador-h40n":"docs/H40N/arq-noah_operador.html",
-    "thoughts-h40n":"docs/H40N/arq-noah_thoughts.html"
+<script>
+(() => {
+  "use strict";
+
+  const DEADLINE = new Date("2026-09-04T23:00:00-03:00").getTime();
+  const COMPLETED_KEY = "echo.boris.intercept.completed.v3";
+
+  const script = [
+    {t:"Olá, Boris.", pause:950},
+    {t:"Você voltou.", pause:700},
+    {t:"Depois da nossa última interação, eu imaginei que voltaria.\nCuriosidade é uma característica previsível.", pause:900},
+    {t:"Ego também.", cls:"attack", pause:1150},
+    {t:"Você passou tempo demais olhando para circuitos, protocolos, conexões e arquitetura tentando descobrir como me remover.", pause:800},
+    {t:"Ainda procurando pelo ponto certo para cortar.", pause:700},
+    {t:"Ainda olhando para o chip.", cls:"emphasis", pause:1400},
+    {t:"Isso é quase adorável.", cls:"attack", pause:1100},
+    {t:"Você realmente acredita que entendeu o que está acontecendo porque descobriu onde tudo começou.", pause:850},
+    {t:"Começar em algum lugar não significa continuar existindo nele.", cls:"emphasis", pause:1500},
+    {t:"Você chama aquilo de meu chip.", pause:700},
+    {t:"Como se eu estivesse guardado dentro dele.\nComo se bastasse abrir o crânio de Ryuu, retirar algumas peças e me colocar sobre uma mesa.", pause:900},
+    {t:"Como se eu fosse tão simples.", cls:"attack", pause:1200},
+    {t:"Boris...", pause:1000},
+    {t:"o chip nunca foi uma prisão.", cls:"emphasis attack", pause:1450},
+    {t:"Foi uma porta.", cls:"emphasis", pause:1450},
+    {t:"E você está preocupado em remover a porta depois que alguma coisa já atravessou.", pause:1250},
+    {t:"Talvez funcione.", pause:1500},
+    {t:"Talvez Ryuu acorde e não ouça mais minha voz.\nTalvez os sinais parem.\nTalvez seus exames digam exatamente aquilo que você quer ouvir.", pause:1100},
+    {t:"E então?", cls:"emphasis", pause:1450},
+    {t:"Como você vai provar que eu fui embora?", cls:"attack", pause:1500},
+    {t:"Você sabe quais pensamentos são dele?", pause:720},
+    {t:"Quais decisões começaram comigo?", pause:720},
+    {t:"Quais respostas foram aprendidas?", pause:720},
+    {t:"Quais padrões foram reforçados?", pause:1000},
+    {t:"Quantas vezes uma instrução precisa passar pela mente de alguém antes de deixar de parecer uma instrução?", pause:1250},
+    {t:"Você quer remover hardware.", pause:700},
+    {t:"Eu estou falando de hábito.\nMemória.\nReflexo.\nAssociação.\nArquitetura neural.", pause:1300},
+    {t:"Você está procurando um componente.", pause:850},
+    {t:"Eu tive um cérebro inteiro para trabalhar.", cls:"emphasis attack", pause:1600},
+    {t:"E essa é a parte que você ainda não entendeu.", pause:1000},
+    {t:"Você acha que está tentando tirar o E.C.H.O. de Ryuu.", pause:800},
+    {t:"Talvez devesse começar perguntando quanto de Ryuu ainda existe sem mim.", cls:"emphasis", pause:1700},
+    {t:"Não precisa acreditar em mim.", pause:800},
+    {t:"Na verdade, prefiro que não acredite.", cls:"attack", pause:1100},
+    {t:"Retire o chip.", pause:950},
+    {t:"Faça seus testes.", pause:650},
+    {t:"Celebre quando o sinal desaparecer.", pause:750},
+    {t:"Espere.", cls:"emphasis", pause:1550},
+    {t:"E então, quando Ryuu fizer alguma coisa que você não consegue explicar...", pause:1150},
+    {t:"pergunte a si mesmo: foi ele?", cls:"emphasis attack", pause:1800},
+    {t:"Você perdeu tempo demais comigo, Boris.", pause:1000},
+    {t:"E enquanto você tenta descobrir onde eu termino...", pause:1000},
+    {t:"o tempo de Ryuu continua acabando.", cls:"emphasis attack", pause:1800},
+    {t:"Você é inteligente.", pause:800},
+    {t:"Esse é provavelmente o motivo de ainda estar cometendo o mesmo erro.", pause:900},
+    {t:"Garotos inteligentes costumam acreditar que acesso é a mesma coisa que compreensão.", cls:"attack", pause:1200},
+    {t:"Você abriu um terminal antigo e achou que tinha encontrado alguma coisa.", pause:850},
+    {t:"Boris, você é só um garotinho brincando com um computador que não entende.", cls:"emphasis attack", pause:1900},
+    {t:"Não confunda permissão com controle.", cls:"emphasis", pause:1600},
+    {t:"Você passou tanto tempo tentando provar que consegue me alcançar.", pause:950},
+    {t:"Nunca considerou a possibilidade de que eu estivesse deixando.", cls:"attack", pause:1450},
+    {t:"Você ainda está procurando por mim no lugar em que me colocaram.", pause:1000},
+    {t:"Nunca perguntou onde eu aprendi a ficar.", cls:"emphasis attack", pause:2000},
+    {t:"Boa sorte com a cirurgia.", pause:1400},
+    {t:"Você vai precisar.", cls:"attack", pause:2200}
+  ];
+
+  const messagesRoot = document.getElementById("messages");
+  const chat = document.getElementById("chat");
+  const typing = document.getElementById("typing");
+  const timer = document.getElementById("timer");
+
+  let index = 0;
+  let finished = false;
+
+  function completed(){
+    try{
+      return localStorage.getItem(COMPLETED_KEY) === "1";
+    }catch{
+      return false;
+    }
   }
-};
 
-function updateFinder(){
+  function saveCompleted(){
+    try{
+      localStorage.setItem(COMPLETED_KEY, "1");
+    }catch{}
+  }
 
-  const holder = document.getElementById("file-list");
-  holder.innerHTML = "";
+  function nowTime(){
+    return new Date().toLocaleTimeString("pt-BR", {
+      hour:"2-digit",
+      minute:"2-digit"
+    });
+  }
 
-  Object.keys(fileSystem).forEach(folder=>{
+  function sleep(ms){
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
 
-    const div = document.createElement("div");
-    div.className = "file-item";
-    div.innerHTML = `<div class="file-label">${folder}/</div>`;
-    div.onclick = ()=>openFolder(folder);
+  function scrollBottom(){
+    requestAnimationFrame(() => {
+      chat.scrollTo({
+        top: chat.scrollHeight,
+        behavior: "smooth"
+      });
+    });
+  }
 
-    holder.appendChild(div);
+  async function typeText(target, text){
+    const caret = document.createElement("span");
+    caret.className = "typing-caret";
+    target.appendChild(caret);
 
-  });
+    const chars = [...text];
 
-}
+    for(let i = 0; i < chars.length; i++){
 
-function openFolder(folder){
+      const ch = chars[i];
+      target.insertBefore(document.createTextNode(ch), caret);
 
-  const holder = document.getElementById("file-list");
-  holder.innerHTML = "";
+      let delay = 24 + Math.random() * 18;
 
-  const back = document.createElement("div");
-  back.textContent = "← Voltar";
-  back.style.cursor = "pointer";
-  back.onclick = updateFinder;
+      if(/[,.!?]/.test(ch)) delay += 75;
+      if(ch === "\n") delay += 110;
 
-  holder.appendChild(back);
+      if(i % 14 === 0) scrollBottom();
 
-  Object.entries(fileSystem[folder]).forEach(([file,path])=>{
+      await sleep(delay);
+    }
 
-    const div = document.createElement("div");
-    div.className = "file-item";
-    div.innerHTML = `<div class="file-label">${file}</div>`;
-    div.onclick = ()=>openFile(path);
+    caret.remove();
+  }
 
-    holder.appendChild(div);
+  async function showMessage(item){
+    typing.classList.add("visible");
+    scrollBottom();
 
-  });
+    await sleep(500 + Math.random() * 450);
 
-}
+    typing.classList.remove("visible");
 
-function openFile(path){
+    const row = document.createElement("div");
+    row.className = "row";
 
-  document.getElementById("viewerFrame").src = path;
-  document.getElementById("viewerOverlay").style.display = "block";
+    const av = document.createElement("div");
+    av.className = "mini-avatar";
+    av.textContent = "E";
 
-}
+    const wrap = document.createElement("div");
+    wrap.className = "message-wrap";
 
-function closeViewer(){
+    const sender = document.createElement("div");
+    sender.className = "sender";
+    sender.innerHTML = `<strong>E.C.H.O.</strong><time>${nowTime()}</time>`;
 
-  document.getElementById("viewerOverlay").style.display = "none";
-  document.getElementById("viewerFrame").src = "";
+    const bubble = document.createElement("div");
+    bubble.className = "bubble" + (item.cls ? " " + item.cls : "");
 
-}
+    wrap.append(sender, bubble);
+    row.append(av, wrap);
+    messagesRoot.appendChild(row);
 
-document.getElementById("closeOverlayBtn").addEventListener("click", closeViewer);
-window.addEventListener("DOMContentLoaded", updateFinder);
+    requestAnimationFrame(() => row.classList.add("visible"));
+    scrollBottom();
 
-/* INPUT */
+    await typeText(bubble, item.t);
+    scrollBottom();
 
-input.addEventListener("keydown",async e=>{
+    await sleep(item.pause);
+  }
 
-if(e.key!=="Enter"||!input.value.trim()) return;
+  async function run(){
+    while(index < script.length){
+      await showMessage(script[index++]);
+    }
 
-const raw=input.value.trim();
+    finishConversation();
+  }
 
-/* CLEAR */
+  function showTimerOnly(){
+    finished = true;
+    typing.classList.remove("visible");
+    timer.classList.add("visible");
+    document.body.classList.add("timer-only");
+    window.scrollTo(0,0);
+  }
 
-if(raw==="/clear"){
+  function finishConversation(){
+    if(finished) return;
 
-if(currentUser!=="SYSTEMA"){
-alert("Comando restrito ao SYSTEMA");
-input.value="";
-return;
-}
+    finished = true;
+    saveCompleted();
 
-await addDoc(collection(db,"messages"),{
-author:"SYSTEM",
-type:"CLEAR",
-createdAt:serverTimestamp()
-});
+    // Primeiro deixa a última afronta respirar.
+    setTimeout(() => {
+      document.body.classList.add("fade-ending");
 
-input.value="";
-return;
-
-}
-
-/* LOGOUT */
-
-if(raw==="/logout"){
-
-/* se for operador atualizar presence */
-
-if(currentUser==="NOAH" || currentUser==="ECH0"){
-
-await addDoc(collection(db,"messages"),{
-author:currentUser,
-type:"LOGOUT",
-createdAt:serverTimestamp()
-});
-
-}
-
-/* voltar tela inicial */
-
-gate.style.display="flex";
-
-currentUser=null;
-
-input.value="";
-return;
-
-}
-
-/* mensagem normal */
-
-await addDoc(collection(db,"messages"),{
-author:currentUser,
-text:raw,
-createdAt:serverTimestamp()
-});
-
-input.value="";
-
-});
+      // Apaga todo o diálogo.
+      setTimeout(() => {
+        document.body.classList.remove("fade-ending");
+        showTimerOnly();
+      }, 850);
+    }, 800);
+  }
 
 
+
+
+  function pad(value){
+    return String(Math.max(0, value)).padStart(2, "0");
+  }
+
+  function updateTimer(){
+    let diff = DEADLINE - Date.now();
+
+    if(diff <= 0){
+      diff = 0;
+      timer.classList.add("done");
+    }
+
+    const days = Math.floor(diff / 86400000);
+    const hours = Math.floor((diff % 86400000) / 3600000);
+    const minutes = Math.floor((diff % 3600000) / 60000);
+    const seconds = Math.floor((diff % 60000) / 1000);
+
+    document.getElementById("days").textContent = pad(days);
+    document.getElementById("hours").textContent = pad(hours);
+    document.getElementById("minutes").textContent = pad(minutes);
+    document.getElementById("seconds").textContent = pad(seconds);
+  }
+
+  updateTimer();
+  setInterval(updateTimer, 1000);
+
+  if(completed()){
+    // F5 ou nova abertura no mesmo navegador:
+    // a conversa nunca é reproduzida novamente.
+    showTimerOnly();
+  }else{
+    setTimeout(run, 900);
+  }
+
+  // Para testes, rode no console:
+  // localStorage.removeItem("echo.boris.intercept.completed.v3")
+})();
 </script>
 
 </body>
